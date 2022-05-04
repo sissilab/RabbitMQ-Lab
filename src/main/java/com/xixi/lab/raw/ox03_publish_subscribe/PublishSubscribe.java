@@ -1,15 +1,15 @@
 package com.xixi.lab.raw.ox03_publish_subscribe;
 
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
-import com.rabbitmq.client.DeliverCallback;
+import com.rabbitmq.client.*;
 
 import java.util.Scanner;
 
 /**
- * 三、Publish/Subscribe 发布订阅（Fanout 扇出）：Sending messages to many consumers at once
- * https://www.rabbitmq.com/tutorials/tutorial-three-java.html
+ * 3. Publish/Subscribe 发布订阅（Fanout 扇出）：Sending messages to many consumers at once
+ *
+ * @desc: Distributing tasks among workers (the competing consumers pattern)
+ * @url: https://www.rabbitmq.com/tutorials/tutorial-three-java.html
+ * @component: 一个生产者，一个交换机（fanout），多个临时队列与多个消费者
  *
  * *Exchanges(交换机)：产者和队列之间的桥梁。生产者生产的消息不会直接发送到队列，实际上生产者不知道这些消息发送到了哪些队列中。
  *      生产者只能将消息发送到交换机中。交换机仅是：一方面接收来自生产者的消息，另一方面将这些消息推送到队列中。
@@ -32,7 +32,7 @@ public class PublishSubscribe {
 }
 
 /**
- * 生产者：发送日志消息
+ * 生产者：发送日志消息到指定交换机（logs）中，声明交换为fanout类型（广播）
  */
 class EmitLog {
 
@@ -44,18 +44,18 @@ class EmitLog {
         try (Connection connection = factory.newConnection();
              Channel channel = connection.createChannel()) {
 
-            // 声明交换机名称+类型
-            channel.exchangeDeclare(EXCHANGE_NAME, "fanout");
+            // 声明交换机名称 + 类型(fanout)
+            channel.exchangeDeclare(EXCHANGE_NAME, BuiltinExchangeType.FANOUT);
 
-            String message = argv.length < 1 ? "info: Hello World!" : String.join(" ", argv);
+            String message = "Hello World!";
 
             // 生产者发布消息：
-            // 参数1：exchange：设置交换机名，之前为空串（Nameless exchange，默认交换机）。若exchange非空，则交由交换机来决定将消息放到哪些队列
-            // 参数2：routingKey：设置为空串，之前都为队列名。若routingKey非空，则会根据此值，路由到指定队列中
+            // 参数1 exchange：设置交换机名，之前为空串（Nameless exchange，默认交换机）。若exchange非空，则交由交换机来决定将消息放到哪些队列
+            // 参数2 routingKey：设置为空串，之前都为队列名。若routingKey非空，则会根据此值，路由到指定队列中
             channel.basicPublish(EXCHANGE_NAME, "", null, message.getBytes("UTF-8"));
             System.out.println(" [x] Sent '" + message + "'");
 
-            //.............. 控制台输入消息
+            // 控制台输入消息，回车发布
             Scanner scanner = new Scanner(System.in);
             while (scanner.hasNext()) {
                 String input = scanner.next();
@@ -68,6 +68,7 @@ class EmitLog {
 
 /**
  * 消费者1：接收日志消息
+ * 设置绑定关系：队列名（临时队列） <--> 交换机名（logs）
  */
 class ReceiveLogs1 {
 
@@ -80,8 +81,8 @@ class ReceiveLogs1 {
         Connection connection = factory.newConnection();
         Channel channel = connection.createChannel();
 
-        // 声明交换机名称+类型
-        channel.exchangeDeclare(EXCHANGE_NAME, "fanout");
+        // 声明交换机名称 + 类型(fanout)
+        channel.exchangeDeclare(EXCHANGE_NAME, BuiltinExchangeType.FANOUT);
         // 创建临时队列，一旦我们断开了消费者的连接，队列将被自动删除
         String queueName = channel.queueDeclare().getQueue();
         // 设置Bindings关系：队列名 <--> 交换机名
@@ -111,8 +112,8 @@ class ReceiveLogs2 {
         Connection connection = factory.newConnection();
         Channel channel = connection.createChannel();
 
-        // 声明交换机名称+类型
-        channel.exchangeDeclare(EXCHANGE_NAME, "fanout");
+        // 声明交换机名称 + 类型(fanout)
+        channel.exchangeDeclare(EXCHANGE_NAME, BuiltinExchangeType.FANOUT);
         // 创建临时队列，一旦我们断开了消费者的连接，队列将被自动删除
         String queueName = channel.queueDeclare().getQueue();
         // 设置Bindings关系：队列名 <--> 交换机名
