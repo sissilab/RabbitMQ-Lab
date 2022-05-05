@@ -1,4 +1,6 @@
-spring:
+#spring:
+#  profiles:
+#    active: hello-world
   application:
     name: RabbitMQ-Lab
   rabbitmq:
