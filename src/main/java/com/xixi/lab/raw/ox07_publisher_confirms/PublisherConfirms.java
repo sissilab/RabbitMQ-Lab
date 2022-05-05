@@ -1,4 +1,4 @@
-package com.xixi.lab.raw;
+package com.xixi.lab.raw.ox07_publisher_confirms;
 
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.ConfirmCallback;
@@ -12,16 +12,16 @@ import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.function.BooleanSupplier;
 
 /**
- * 七、Publisher Confirms 发布确认：Reliable publishing with publisher confirms
- * https://www.rabbitmq.com/tutorials/tutorial-seven-java.html
- * <p>
- * 生产者将信道设置成 confirm 模式，一旦信道进入 confirm 模式，所有在该信道上面发布的
- * 消息都将会被指派一个唯一的 ID(从 1 开始)，一旦消息被投递到所有匹配的队列之后，broker
- * 就会发送一个确认给生产者(包含消息的唯一 ID)，这就使得生产者知道消息已经正确到达目的队
- * 列了，如果消息和队列是可持久化的，那么确认消息会在将消息写入磁盘之后发出，broker 回传
- * 给生产者的确认消息中 delivery-tag 域包含了确认消息的序列号，此外 broker 也可以设置
- * basic.ack 的 multiple 域，表示到这个序列号之前的所有消息都已经得到了处理。
- * <p>
+ * 7. Publisher Confirms 发送方发布确认机制
+ *
+ * @desc: Reliable publishing with publisher confirms
+ * @url: https://www.rabbitmq.com/tutorials/tutorial-seven-java.html
+ *
+ * 生产者（消息发送方）不知道消息是否真正到达RabbitMQ，故这里引入 发送方发布确认机制。
+ * 生产者一旦将 信道channel 设置为 确认模式（channel.confirmSelect()），所有在该 信道channel 上发布的消息都会被指派一个唯一的ID（从1开始），
+ * 当消息被投递到所有匹配的d队列之后，RabbitMQ就会发送一条 确认ack 给生产者（包含被指派的ID），这样生产者就能得知消息已到达目的地。
+ * 此外，若消息和队列设为持久化，那么会在消息写入磁盘后，再发出 确认ack。
+ *
  * 实质上：生产者发布消息，Broker来确认消息已到队列了或写到磁盘上了
  *
  * 当生产者在发布消息时,如果交换机由于某些原因宕机或者其他原因没有收到消息或者没有将消息发送给队列时
@@ -32,41 +32,40 @@ public class PublisherConfirms {
     static final int MESSAGE_COUNT = 50_000;
 
     static Connection createConnection() throws Exception {
-        ConnectionFactory cf = new ConnectionFactory();
-        cf.setHost("localhost");
-        cf.setUsername("guest");
-        cf.setPassword("guest");
-        return cf.newConnection();
+        ConnectionFactory connectionFactory = new ConnectionFactory();
+        connectionFactory.setHost("localhost");
+        return connectionFactory.newConnection();
     }
 
     public static void main(String[] args) throws Exception {
-//        publishMessagesIndividually();
-//        publishMessagesInBatch();
+        // 单个确认发布
+        publishMessagesIndividually();
+        // 批量确认发布
+        publishMessagesInBatch();
+        // 异步确认发布
         handlePublishConfirmsAsynchronously();
     }
 
     /**
-     * 1、单个确认发布：同步等待确认，简单，但吞吐量非常有限
-     *
-     * @throws Exception
+     * Strategy #1: Publishing Messages Individually
+     * 单个确认发布：同步等待确认，简单，但吞吐量有限，发布速度慢
      */
     static void publishMessagesIndividually() throws Exception {
         try (Connection connection = createConnection()) {
-            Channel ch = connection.createChannel();
+            Channel channel = connection.createChannel();
 
             String queue = UUID.randomUUID().toString();
-            ch.queueDeclare(queue, false, false, true, null);
+            channel.queueDeclare(queue, false, false, true, null);
 
             // 开启发布确认
-            ch.confirmSelect();
+            channel.confirmSelect();
             long start = System.nanoTime();
             for (int i = 0; i < MESSAGE_COUNT; i++) {
                 String body = String.valueOf(i);
-                ch.basicPublish("", queue, null, body.getBytes());
-                //ch.waitForConfirmsOrDie(5_000);
-                boolean flag = ch.waitForConfirms();
-                if (flag) {
-                    System.out.println(i + ":消息发送成功");
+                channel.basicPublish("", queue, null, body.getBytes());
+                //channel.waitForConfirmsOrDie(5_000); // 只有在消息被确认的时候才返回，若在指定时间内未确认则抛出异常TimeoutException
+                if (channel.waitForConfirms()) { // 等到消息确认
+                    System.out.println(i + ": 消息发送成功");
                 }
             }
             long end = System.nanoTime();
@@ -75,19 +74,18 @@ public class PublisherConfirms {
     }
 
     /**
-     * 批量确认发布：批量同步等待确认，简单，合理的吞吐量，一旦出现问题但很难推断出是那条消息出现了问题。
-     *
-     * @throws Exception
+     * Strategy #2: Publishing Messages in Batches
+     * 批量确认发布：批量同步等待确认，简单，合理的吞吐量，一旦出现问题很难推断出是哪条消息出现了问题，实际仍为同步的，一样是阻塞消息的发布
      */
     static void publishMessagesInBatch() throws Exception {
         try (Connection connection = createConnection()) {
-            Channel ch = connection.createChannel();
+            Channel channel = connection.createChannel();
 
             String queue = UUID.randomUUID().toString();
-            ch.queueDeclare(queue, false, false, true, null);
+            channel.queueDeclare(queue, false, false, true, null);
 
             // 开启发布确认
-            ch.confirmSelect();
+            channel.confirmSelect();
 
             int batchSize = 100;
             int outstandingMessageCount = 0;
@@ -95,17 +93,20 @@ public class PublisherConfirms {
             long start = System.nanoTime();
             for (int i = 0; i < MESSAGE_COUNT; i++) {
                 String body = String.valueOf(i);
-                ch.basicPublish("", queue, null, body.getBytes());
+                channel.basicPublish("", queue, null, body.getBytes());
                 outstandingMessageCount++;
 
+                // 批量确认，每100条确认一次
                 if (outstandingMessageCount == batchSize) {
-                    ch.waitForConfirmsOrDie(5_000);
+                    channel.waitForConfirmsOrDie(5_000);
+                    System.out.println("消息确认, i=" + i);
                     outstandingMessageCount = 0;
                 }
             }
-
+            // 确保剩余未确认的消息完成确认
             if (outstandingMessageCount > 0) {
-                ch.waitForConfirmsOrDie(5_000);
+                channel.waitForConfirmsOrDie(5_000);
+                System.out.println("剩余所有消息确认");
             }
             long end = System.nanoTime();
             System.out.format("Published %,d messages in batch in %,d ms%n", MESSAGE_COUNT, Duration.ofNanos(end - start).toMillis());
@@ -113,36 +114,38 @@ public class PublisherConfirms {
     }
 
     /**
+     * Strategy #3: Handling Publisher Confirms Asynchronously
      * 异步确认发布：最佳性能和资源使用，在出现错误的情况下可以很好地控制，但是实现起来稍微难些
-     *
-     * @throws Exception
      */
     static void handlePublishConfirmsAsynchronously() throws Exception {
         try (Connection connection = createConnection()) {
-            Channel ch = connection.createChannel();
+            Channel channel = connection.createChannel();
 
             String queue = UUID.randomUUID().toString();
-            ch.queueDeclare(queue, false, false, true, null);
+            channel.queueDeclare(queue, false, false, true, null);
 
             // 开启发布确认
-            ch.confirmSelect();
+            channel.confirmSelect();
 
+            // 存储未确认的消息，当消息被确认后，则清除掉
+            // map: nextPublishSeqNo -> body(消息)
             ConcurrentNavigableMap<Long, String> outstandingConfirms = new ConcurrentSkipListMap<>();
 
             // ack 回调
             ConfirmCallback ackCallback = (sequenceNumber, multiple) -> {
                 System.out.println("ackCallback: multiple=" + multiple + ", sequenceNumber=" + sequenceNumber);
-                // true 返回的是小于等于当前序列号的未确认消息；false 确认当前序列号消息
+                // multiple: true 返回的是小于等于当前序列号的未确认消息; false 确认当前序列号消息
                 if (multiple) {
-                    // headMap(sequenceNumber): 获取key小于等于sequenceNumber的所有map集合
+                    // headMap(sequenceNumber): 合获取key小于sequenceNumber的所有map集
                     ConcurrentNavigableMap<Long, String> confirmed = outstandingConfirms.headMap(sequenceNumber, true);
                     StringBuilder keySb = new StringBuilder();
                     for (Long seqNo : confirmed.keySet()) {
                         keySb.append(seqNo).append(", ");
                     }
                     System.out.println("multiple=true: sequenceNumber=" + sequenceNumber + ">>" + keySb.toString());
-                    confirmed.clear();
+                    confirmed.clear(); // 清除已确认的消息
                 } else {
+                    // 清除当前sequenceNumber的已确认的消息
                     outstandingConfirms.remove(sequenceNumber);
                 }
             };
@@ -157,20 +160,23 @@ public class PublisherConfirms {
                 ackCallback.handle(sequenceNumber, multiple);
             };
 
-            // 添加一个异步确认监听器
-            ch.addConfirmListener(ackCallback, nackCallback);
+            /* 添加一个异步确认监听器：
+             * 参数1 ConfirmCallback ackCallback：确认消息的回调
+             * 参数2 ConfirmCallback nackCallback：未收到消息的回调
+             */
+            channel.addConfirmListener(ackCallback, nackCallback);
 
             long start = System.nanoTime();
             for (int i = 0; i < MESSAGE_COUNT; i++) {
                 String body = String.valueOf(i);
-                // channel.getNextPublishSeqNo()：获取下一个消息的序列号
-                long nextPublishSeqNo = ch.getNextPublishSeqNo();
+                long nextPublishSeqNo = channel.getNextPublishSeqNo(); // 获取下一个消息的序列号
                 outstandingConfirms.put(nextPublishSeqNo, body);
-                System.out.println("发布：" + nextPublishSeqNo);
-                ch.basicPublish("", queue, null, body.getBytes());
+                System.out.printf("发布: nextPublishSeqNo=%d, body=%s\n", nextPublishSeqNo, body);
+                channel.basicPublish("", queue, null, body.getBytes());
             }
 
-            if (!waitUntil(Duration.ofSeconds(60), () -> outstandingConfirms.isEmpty())) {
+            // 若消息在60秒内未完全确认好，则抛出异常
+            if (!waitUntil(Duration.ofSeconds(60), outstandingConfirms::isEmpty)) {
                 throw new IllegalStateException("All messages could not be confirmed in 60 seconds");
             }
 

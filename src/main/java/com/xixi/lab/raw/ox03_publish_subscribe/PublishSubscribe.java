@@ -11,32 +11,32 @@ import java.util.Scanner;
  * @url: https://www.rabbitmq.com/tutorials/tutorial-three-java.html
  * @component: 一个生产者，一个交换机（fanout），多个临时队列与多个消费者
  *
- * *Exchanges(交换机)：产者和队列之间的桥梁。生产者生产的消息不会直接发送到队列，实际上生产者不知道这些消息发送到了哪些队列中。
- *      生产者只能将消息发送到交换机中。交换机仅是：一方面接收来自生产者的消息，另一方面将这些消息推送到队列中。
- *      交换机需明确知道如何处理接收到的消息，是放入特定队列，还是丢弃它们，这些都取决于 交换机的类型。
- *  交换机的类型：直接(direct),  主题(topic) ,标题(headers) ,  扇出(fanout)
+ * @交换机(Exchanges): 生产者生产消息不会直接发到队列，生产者也不知道这些消息究竟发给了哪些队列，而生产者只能将消息发给交换机。
+ *          交换机是生产者和队列之间的桥梁，一方面接收来自生产者的消息，另一方面则将这些消息推送到队列中。
+ *          交换机需明确知道如何处理接收到的消息，是放入特定队列，还是丢弃它们，这些都取决于 交换机的类型。
+ *          交换机的类型：fanout(扇出)、direct(直接)、topic(主题)、headers(标题)
  *
- * *Temporary queues（临时队列）:创建一个具有随机名称的队列（ channel.queueDeclare().getQueue();），一旦我们断开了消费者的连接，队列将被自动删除。
+ * @临时队列: Temporary queues，创建一个具有随机名称的队列（channel.queueDeclare().getQueue()），一旦断开了消费者的连接，该临时队列将被自动删除
  *
- * *Bindings（绑定）：exchange 和 queue 之间的桥梁，它告诉我们 exchange 和哪个队列进行了绑定关系。
+ * @绑定(Bindings): exchange（交换机） 和 queue（队列） 之间的桥梁，它告诉我们 交换机 和 哪个队列 建立绑定关系
  *
- * *Fanout（扇出）：它是将接收到的所有消息广播到它知道的所有队列中。
+ * @Fanout(扇出): 一种交换机的类型，它是将接收到的所有消息广播到它知道的所有队列中（存在绑定关系）
  *--------------------
- * 下面为一个的简单log系统示例：生产者发送日志信息，日志信息由生产者经由 Exchanges(交换机)，根据 Bindings（绑定） 找到合适的队列，并将日志消息放到这些队列中，再分配给各个消费者
+ * 下面为一个的简单log日志系统示例：生产者发送日志信息，日志信息由生产者经由 Exchanges(交换机)，根据 Bindings（绑定） 找到合适的队列，并将日志消息放到这些队列中，再分配给各个消费者
  *      采用 扇出(fanout) 类型的交换机：实现广播消息机制，即生产者发送消息，所有订阅的消费者都会接收到消息。
  * P --> Exchange -> 临时队列1 --> C1
  *   --> Exchange -> 临时队列2 --> C2
- * 一个生产者（发送消息到交换机），一个交换机（连接2个临时队列），2个临时队列，2个消费者（每个队列对应一个消费者）
+ * 一个生产者（发送消息到交换机），一个fanout交换机（连接2个临时队列），2个临时队列，2个消费者（每个队列对应一个消费者）
  */
 public class PublishSubscribe {
 }
 
 /**
- * 生产者：发送日志消息到指定交换机（logs）中，声明交换为fanout类型（广播）
+ * 生产者：发送日志消息到指定交换机（logs_X）中，声明交换为fanout类型（广播）
  */
 class EmitLog {
 
-    private static final String EXCHANGE_NAME = "logs";
+    private static final String EXCHANGE_NAME = "logs_X";
 
     public static void main(String[] argv) throws Exception {
         ConnectionFactory factory = new ConnectionFactory();
@@ -50,8 +50,8 @@ class EmitLog {
             String message = "Hello World!";
 
             // 生产者发布消息：
-            // 参数1 exchange：设置交换机名，之前为空串（Nameless exchange，默认交换机）。若exchange非空，则交由交换机来决定将消息放到哪些队列
-            // 参数2 routingKey：设置为空串，之前都为队列名。若routingKey非空，则会根据此值，路由到指定队列中
+            // 参数1 String exchange：设置交换机名，之前为空串（Nameless exchange，默认交换机）。若exchange非空，则交由交换机来决定将消息放到哪些队列
+            // 参数2 String routingKey：设置为空串，之前都为队列名，fanout类型交换机会忽略该值。若routingKey非空，则会根据此值，路由到指定队列中
             channel.basicPublish(EXCHANGE_NAME, "", null, message.getBytes("UTF-8"));
             System.out.println(" [x] Sent '" + message + "'");
 
@@ -68,12 +68,12 @@ class EmitLog {
 
 /**
  * 消费者1：接收日志消息
- * 设置绑定关系：队列名（临时队列） <--> 交换机名（logs）
+ * 设置绑定关系：队列名（临时队列） <--> 交换机名（logs_X）
  */
 class ReceiveLogs1 {
 
     // 交换机名称
-    private static final String EXCHANGE_NAME = "logs";
+    private static final String EXCHANGE_NAME = "logs_X";
 
     public static void main(String[] argv) throws Exception {
         ConnectionFactory factory = new ConnectionFactory();
@@ -85,7 +85,7 @@ class ReceiveLogs1 {
         channel.exchangeDeclare(EXCHANGE_NAME, BuiltinExchangeType.FANOUT);
         // 创建临时队列，一旦我们断开了消费者的连接，队列将被自动删除
         String queueName = channel.queueDeclare().getQueue();
-        // 设置Bindings关系：队列名 <--> 交换机名
+        // 设置Bindings关系：队列名 <--> 交换机名（routingKey为空串，fanout类型交换机会忽略该值）
         channel.queueBind(queueName, EXCHANGE_NAME, "");
 
         System.out.println(" [*] 消费者1：Waiting for messages. To exit press CTRL+C");
@@ -100,11 +100,12 @@ class ReceiveLogs1 {
 
 /**
  * 消费者2：接收日志消息
+ * 设置绑定关系：队列名（临时队列） <--> 交换机名（logs_X）
  */
 class ReceiveLogs2 {
 
     // 交换机名称
-    private static final String EXCHANGE_NAME = "logs";
+    private static final String EXCHANGE_NAME = "logs_X";
 
     public static void main(String[] argv) throws Exception {
         ConnectionFactory factory = new ConnectionFactory();
@@ -116,7 +117,7 @@ class ReceiveLogs2 {
         channel.exchangeDeclare(EXCHANGE_NAME, BuiltinExchangeType.FANOUT);
         // 创建临时队列，一旦我们断开了消费者的连接，队列将被自动删除
         String queueName = channel.queueDeclare().getQueue();
-        // 设置Bindings关系：队列名 <--> 交换机名
+        // 设置Bindings关系：队列名 <--> 交换机名（routingKey为空串，fanout类型交换机会忽略该值）
         channel.queueBind(queueName, EXCHANGE_NAME, "");
 
         System.out.println(" [*] 消费者2：Waiting for messages. To exit press CTRL+C");
