@@ -16,18 +16,20 @@ import org.springframework.context.annotation.Profile;
 @Configuration
 public class Tut1Config {
 
+    public static final String QUEUE_NAME = "hello-spring-queue";
+
     /**
-     * 声明一个队列 hello_queue
+     * 声明一个队列 hello-spring-queue
      * 当spring.profiles.active为hello-world，即会创建
      */
     @Bean
     public Queue hello() {
-        return new Queue("hello_queue");
+        return new Queue(QUEUE_NAME);
     }
 
     /**
      * 生产者
-     * 当spring.profiles.active为hello-world + send，即会创建
+     * 当spring.profiles.active为hello-world + sender，即会创建
      */
     @Profile("sender")
     @Bean
@@ -37,7 +39,7 @@ public class Tut1Config {
 
     /**
      * 消费者
-     * 当spring.profiles.active为hello-world + receive，即会创建
+     * 当spring.profiles.active为hello-world + receiver，即会创建
      */
     @Profile("receiver")
     @Bean

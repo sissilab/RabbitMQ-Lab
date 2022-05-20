@@ -3,23 +3,26 @@ package com.xixi.lab.rabbitmq.java.ox01_hello_world;
 import com.rabbitmq.client.*;
 
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 
 /**
- * 1. HelloWorld
+ * 1. Hello World 简单模式
  *
  * @desc: The simplest thing that does something.
  * @url: https://www.rabbitmq.com/tutorials/tutorial-one-java.html
  * @component: 一个生产者、一个默认交换机、一个消费者
+ *
+ * 一个生产者发送消息到队列中，一个消费者监听队列并将接收到的消息打印出来
  */
 public class HelloWorld {
 }
 
 /**
- * 生产者：将消息放入 hello队列 中
+ * 生产者：将消息放入hello-queue队列中
  */
 class HelloWorldSend {
 
-    private final static String QUEUE_NAME = "hello";
+    private final static String QUEUE_NAME = "hello-queue";
 
     public static void main(String[] argv) throws Exception {
         // 1、创建连接工厂
@@ -36,7 +39,7 @@ class HelloWorldSend {
              * 参数5 Map<String, Object> arguments：其他参数
              */
             channel.queueDeclare(QUEUE_NAME, false, false, false, null);
-            String message = "Hello World!";
+            String message = "Hello World! " + LocalDateTime.now().toString();
             // 5、发布消息（消息需转为 byte[]）至队列中
             /* 参数1 String exchange：交换机名，发布消息到该交换机中，若为空串，则发往MQ默认的交换机中
              * 参数2 String routingKey：路由键，交换机根据routingKey将消息放到对应的队列中
@@ -44,17 +47,17 @@ class HelloWorldSend {
              * 参数4 byte[] body：消息体
              */
             channel.basicPublish("", QUEUE_NAME, null, message.getBytes(StandardCharsets.UTF_8));
-            System.out.println(" [x] Sent '" + message + "'");
+            System.out.println(">>> Sent '" + message + "'");
         }
     }
 }
 
 /**
- * 消费者：接收消息，启动后将处于一直监听消息中，当消息到达 hello队列 中，通过回调 DeliverCallback 来处理获取到的消息
+ * 消费者：接收消息，启动后将处于一直监听消息中，当消息到达hello-queue队列中，通过回调DeliverCallback来处理获取到的消息
  */
 class HelloWorldRecv {
 
-    private final static String QUEUE_NAME = "hello";
+    private final static String QUEUE_NAME = "hello-queue";
 
     public static void main(String[] argv) throws Exception {
         // 1、创建连接工厂
@@ -71,11 +74,11 @@ class HelloWorldRecv {
         // DeliverCallback 用于缓存发送过来的消息，通过该回调可接收并处理消息
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
-            System.out.printf(" [x] Received '%s', consumerTag=%s%n", message, consumerTag);
+            System.out.printf("<<<[√] Received '%s', consumerTag=%s\n", message, consumerTag);
         };
         // CancelCallback 消费取消回调
         CancelCallback cancelCallback = (consumerTag) -> {
-            System.out.printf(" [x] Canceled: consumerTag=%s%n", consumerTag);
+            System.out.printf("<<<[x] Canceled: consumerTag=%s\n", consumerTag);
         };
         // 5、消费/接收消息，通过回调来处理接收到的消息
         /* 参数1 String queue：队列名，指定消费哪个队列

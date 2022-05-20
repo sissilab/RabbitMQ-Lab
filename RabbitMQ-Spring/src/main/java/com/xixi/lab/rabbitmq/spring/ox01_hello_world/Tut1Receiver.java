@@ -5,9 +5,9 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 
 /**
  * 消费者：接收消息
- * 通过注解 @RabbitListener 设置监听的队列
+ * 通过注解 @RabbitListener 设置监听的队列，搭配注解 @RabbitHandler 来接收消息
  */
-@RabbitListener(queues = "hello_queue")
+@RabbitListener(queues = Tut1Config.QUEUE_NAME)
 public class Tut1Receiver {
 
     /**
@@ -17,6 +17,6 @@ public class Tut1Receiver {
      */
     @RabbitHandler
     public void receive(String msg) {
-        System.out.println(" [x] Received '" + msg + "'");
+        System.out.println("<<< Received: " + msg);
     }
 }

@@ -19,12 +19,12 @@ public class Tut1Sender {
     private Queue queue;
 
     /**
-     * 每隔一秒调用发布一次消息
+     * 在容器启动过延迟2秒后，再每隔3秒调用发布一次消息
      */
-    @Scheduled(fixedDelay = 1000, initialDelay = 500)
+    @Scheduled(fixedDelay = 3000, initialDelay = 2000)
     public void send() {
         String message = "Hello World! " + LocalTime.now().toString();
         template.convertAndSend(queue.getName(), message);
-        System.out.println(" [x] Sent '" + message + "'");
+        System.out.println(">>> Sent: " + message);
     }
 }
