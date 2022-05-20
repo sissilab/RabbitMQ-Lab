@@ -18,18 +18,19 @@ import java.util.concurrent.TimeoutException;
  * @component: 一个生产者，一个默认的交换机，一个队列，多个消费者
  */
 public class WorkQueues {
+    public final static String QUEUE_NAME = "work-queue";
 }
 
 /**
- * 生产者：不断生产消息，并将消息发布到 hello队列 中（这里模拟循环20次来发布消息）
+ * 生产者：不断生产消息，并将消息发布到 work-queue 队列 中（这里模拟循环20次来发布消息）
  */
 class WorkQueuesSend {
 
-    private final static String QUEUE_NAME = "hello";
+    private static int SEND_COUNT = 20;
 
     public static void main(String[] argv) throws Exception {
         String msg = "Hello, work queues: ";
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < SEND_COUNT; i++) {
             send(msg + i);
         }
     }
@@ -39,9 +40,10 @@ class WorkQueuesSend {
         factory.setHost("localhost");
         try (Connection connection = factory.newConnection();
              Channel channel = connection.createChannel()) {
-            channel.queueDeclare(QUEUE_NAME, false, false, false, null);
-            channel.basicPublish("", QUEUE_NAME, null, message.getBytes(StandardCharsets.UTF_8));
-            System.out.println(" [x] Sent '" + message + "'");
+            channel.queueDeclare(WorkQueues.QUEUE_NAME, false, false, false, null);
+            // 生产者发布消息
+            channel.basicPublish("", WorkQueues.QUEUE_NAME, null, message.getBytes(StandardCharsets.UTF_8));
+            System.out.println(">>> Sent '" + message + "'");
         }
     }
 }
@@ -61,28 +63,26 @@ class WorkQueuesSend {
  */
 class WorkQueuesAutoAckRecv {
 
-    private final static String QUEUE_NAME = "hello";
-
     public static void main(String[] argv) throws Exception {
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost("localhost");
         Connection connection = factory.newConnection();
         Channel channel = connection.createChannel();
 
-        channel.queueDeclare(QUEUE_NAME, false, false, false, null);
+        channel.queueDeclare(WorkQueues.QUEUE_NAME, false, false, false, null);
         System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
 
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
-            System.out.println(" [x] Received '" + message + "'");
+            System.out.println("<<< Received: " + message);
             try {
                 processMessage();
             } finally {
-                System.out.println(" [x] Done");
+                System.out.println("[√] Done!!!");
             }
         };
         boolean autoAck = true; // 自动确认
-        channel.basicConsume(QUEUE_NAME, autoAck, deliverCallback, consumerTag -> {
+        channel.basicConsume(WorkQueues.QUEUE_NAME, autoAck, deliverCallback, consumerTag -> {
         });
     }
 
@@ -108,15 +108,13 @@ class WorkQueuesAutoAckRecv {
  */
 class WorkQueuesManualAckRecv {
 
-    private final static String QUEUE_NAME = "hello";
-
     public static void main(String[] argv) throws Exception {
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost("localhost");
         Connection connection = factory.newConnection();
         Channel channel = connection.createChannel();
 
-        channel.queueDeclare(QUEUE_NAME, false, false, false, null);
+        channel.queueDeclare(WorkQueues.QUEUE_NAME, false, false, false, null);
         System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
 
         // DeliverCallback 用于缓存发送过来的消息，通过该回调可接收并处理消息
@@ -137,7 +135,7 @@ class WorkQueuesManualAckRecv {
         // 设置取消自动确认，需手动确认 channel.basicAck()
         // 若某个消费者接收到消息，一直未答复，超时（默认30分钟），则该Channel会关闭（PRECONDITION_FAILED） https://www.rabbitmq.com/consumers.html#acknowledgement-timeout
         boolean autoAck = false;
-        channel.basicConsume(QUEUE_NAME, autoAck, deliverCallback, consumerTag -> {
+        channel.basicConsume(WorkQueues.QUEUE_NAME, autoAck, deliverCallback, consumerTag -> {
         });
     }
 
