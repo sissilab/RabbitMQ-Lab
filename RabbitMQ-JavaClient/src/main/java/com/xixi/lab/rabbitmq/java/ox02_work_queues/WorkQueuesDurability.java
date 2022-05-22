@@ -33,10 +33,10 @@ public class WorkQueuesDurability {
             // 声明队列时，设置队列持久化 durable=true
             boolean durable = true;
             channel.queueDeclare(QUEUE_NAME, durable, false, false, null);
-            String message = "Hello, durable queue.";
+            String message = "Hello, durable queue...";
             // 发布消息时，标记消息持久化 MessageProperties.PERSISTENT_TEXT_PLAIN
             channel.basicPublish("", QUEUE_NAME, MessageProperties.PERSISTENT_TEXT_PLAIN, message.getBytes(StandardCharsets.UTF_8));
-            System.out.println(" [x] Sent '" + message + "'");
+            System.out.println(">>> Sent: " + message);
         }
     }
 }

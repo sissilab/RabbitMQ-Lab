@@ -18,15 +18,16 @@ import java.util.concurrent.TimeoutException;
  * @component: 一个生产者，一个默认的交换机，一个队列，多个消费者
  */
 public class WorkQueues {
-    public final static String QUEUE_NAME = "work-queue";
 }
 
 /**
- * 生产者：不断生产消息，并将消息发布到 work-queue 队列 中（这里模拟循环20次来发布消息）
+ * 生产者：不断生产消息，并将消息发布到 work-queue 队列 中（这里模拟循环来发布20次消息）
  */
 class WorkQueuesSend {
 
-    private static int SEND_COUNT = 20;
+    private final static String QUEUE_NAME = "work-queue";
+
+    private static int SEND_COUNT = 10;
 
     public static void main(String[] argv) throws Exception {
         String msg = "Hello, work queues: ";
@@ -40,10 +41,10 @@ class WorkQueuesSend {
         factory.setHost("localhost");
         try (Connection connection = factory.newConnection();
              Channel channel = connection.createChannel()) {
-            channel.queueDeclare(WorkQueues.QUEUE_NAME, false, false, false, null);
+            channel.queueDeclare(QUEUE_NAME, false, false, false, null);
             // 生产者发布消息
-            channel.basicPublish("", WorkQueues.QUEUE_NAME, null, message.getBytes(StandardCharsets.UTF_8));
-            System.out.println(">>> Sent '" + message + "'");
+            channel.basicPublish("", QUEUE_NAME, null, message.getBytes(StandardCharsets.UTF_8));
+            System.out.println(">>> Sent: " + message);
         }
     }
 }
@@ -63,13 +64,15 @@ class WorkQueuesSend {
  */
 class WorkQueuesAutoAckRecv {
 
+    private final static String QUEUE_NAME = "work-queue";
+
     public static void main(String[] argv) throws Exception {
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost("localhost");
         Connection connection = factory.newConnection();
         Channel channel = connection.createChannel();
 
-        channel.queueDeclare(WorkQueues.QUEUE_NAME, false, false, false, null);
+        channel.queueDeclare(QUEUE_NAME, false, false, false, null);
         System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
 
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
@@ -82,7 +85,7 @@ class WorkQueuesAutoAckRecv {
             }
         };
         boolean autoAck = true; // 自动确认
-        channel.basicConsume(WorkQueues.QUEUE_NAME, autoAck, deliverCallback, consumerTag -> {
+        channel.basicConsume(QUEUE_NAME, autoAck, deliverCallback, consumerTag -> {
         });
     }
 
@@ -104,9 +107,11 @@ class WorkQueuesAutoAckRecv {
  * 自动答复：消息发送后立即被认为已经传送成功，这种模式需要在高吞吐量和数据传输安全性（若消费者异常关闭，那么消息也会丢失）方面做权衡。
  * https://www.rabbitmq.com/confirms.html
  *
- * 数据测试结果：当有两个消费者C1和C2，C2执行过程中突然断开，则C2分配的消息全都转到C1的末尾去执行，需等C1之前分配的消息执行完，才处理C2的
+ * 数据测试结果：当有两个消费者C1和C2，C1执行过程中突然断开，则C1分配的消息全都转到C2的末尾去执行，需等C2之前分配的消息执行完，才处理C1后来未执行完的消息
  */
 class WorkQueuesManualAckRecv {
+
+    private final static String QUEUE_NAME = "work-queue";
 
     public static void main(String[] argv) throws Exception {
         ConnectionFactory factory = new ConnectionFactory();
@@ -114,17 +119,17 @@ class WorkQueuesManualAckRecv {
         Connection connection = factory.newConnection();
         Channel channel = connection.createChannel();
 
-        channel.queueDeclare(WorkQueues.QUEUE_NAME, false, false, false, null);
+        channel.queueDeclare(QUEUE_NAME, false, false, false, null);
         System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
 
         // DeliverCallback 用于缓存发送过来的消息，通过该回调可接收并处理消息
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
-            System.out.println(" [x] Received '" + message + "'");
+            System.out.println("<<< Received: " + message);
             try {
                 processMessage();
             } finally {
-                System.out.println(" [x] Done! DeliveryTag=" + delivery.getEnvelope().getDeliveryTag());
+                System.out.println("[√]  Done! DeliveryTag=" + delivery.getEnvelope().getDeliveryTag());
                 // 手动确认消息已处理，若出现异常致使没有答复，则该消息会重新回到队列中，再重新分发下去
                 /* 参数1 long deliveryTag：可看作消息编号，是一个64位的长整型值
                  * 参数2 boolean multiple：true 批量确认当前deliveryTag及其之前的所有消息；false 仅确认当前deliveryTag的消息
@@ -135,7 +140,7 @@ class WorkQueuesManualAckRecv {
         // 设置取消自动确认，需手动确认 channel.basicAck()
         // 若某个消费者接收到消息，一直未答复，超时（默认30分钟），则该Channel会关闭（PRECONDITION_FAILED） https://www.rabbitmq.com/consumers.html#acknowledgement-timeout
         boolean autoAck = false;
-        channel.basicConsume(WorkQueues.QUEUE_NAME, autoAck, deliverCallback, consumerTag -> {
+        channel.basicConsume(QUEUE_NAME, autoAck, deliverCallback, consumerTag -> {
         });
     }
 
