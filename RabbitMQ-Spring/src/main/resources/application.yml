@@ -1,7 +1,16 @@
-#spring:
+spring:
 #  profiles:
 #    active: hello-world
   application:
     name: RabbitMQ-Lab
   rabbitmq:
-    host: localhost
+      host: localhost
+      listener:
+          simple:
+              # 确认模式：
+              # none: 自动确认
+              # auto: 手动确认, springboot会自动发送确认回执 (默认)，若处理方法抛出异常，则该消息会重新发送
+              # manual: 手动确认, springboot不发送回执, 必须自己编码
+              acknowledge-mode: auto
+              # 预取值 qos，默认 250
+              #prefetch: 1

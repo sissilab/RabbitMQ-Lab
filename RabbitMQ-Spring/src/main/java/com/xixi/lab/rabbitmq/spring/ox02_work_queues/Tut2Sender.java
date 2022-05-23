@@ -1,10 +1,12 @@
 package com.xixi.lab.rabbitmq.spring.ox02_work_queues;
 
-import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.AmqpException;
+import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 
+import javax.annotation.PostConstruct;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Tut2Sender {
@@ -15,22 +17,32 @@ public class Tut2Sender {
     @Autowired
     private Queue queue;
 
-    AtomicInteger dots = new AtomicInteger(0);
 
-    AtomicInteger count = new AtomicInteger(0);
-
-    @Scheduled(fixedDelay = 1000, initialDelay = 500)
+    @PostConstruct
     public void send() {
-        StringBuilder builder = new StringBuilder("Hello");
-        if (dots.incrementAndGet() == 4) {
-            dots.set(1);
+        String text = "Hello ";
+        for (int i = 0; i < 10; i++) {
+            String message = text + i;
+            //template.convertAndSend(queue.getName(), message);
+            sendPersistentMsg(message);
+            System.out.println(">>> Sent: " + message);
         }
-        for (int i = 0; i < dots.get(); i++) {
-            builder.append('.');
-        }
-        builder.append(count.incrementAndGet());
-        String message = builder.toString();
-        template.convertAndSend(queue.getName(), message);
-        System.out.println(" [x] Sent '" + message + "'");
+    }
+
+    /**
+     * 发布消息（并持久化消息）
+     *
+     * @param msg
+     */
+    private void sendPersistentMsg(String msg) {
+        template.convertAndSend(queue.getName(), (Object) msg, new MessagePostProcessor() {
+            // 设置消息持久化
+            @Override
+            public Message postProcessMessage(Message message) throws AmqpException {
+                MessageProperties props = message.getMessageProperties();
+                props.setDeliveryMode(MessageDeliveryMode.PERSISTENT);
+                return message;
+            }
+        });
     }
 }

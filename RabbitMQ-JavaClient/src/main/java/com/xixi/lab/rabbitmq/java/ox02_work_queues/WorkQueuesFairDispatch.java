@@ -28,11 +28,11 @@ public class WorkQueuesFairDispatch {
  */
 class WorkQueuesFairDispatchSend {
 
-    private final static String QUEUE_NAME = "task_queue";
+    private final static String QUEUE_NAME = "fair-dispatch-queue";
 
     public static void main(String[] argv) throws Exception {
-        String msg = "Hello, work queues: ";
-        for (int i = 0; i < 20; i++) {
+        String msg = "Hello, fair dispatch queue: ";
+        for (int i = 0; i < 10; i++) {
             send(msg + i);
         }
     }
@@ -44,7 +44,7 @@ class WorkQueuesFairDispatchSend {
              Channel channel = connection.createChannel()) {
             channel.queueDeclare(QUEUE_NAME, true, false, false, null);
             channel.basicPublish("", QUEUE_NAME, MessageProperties.PERSISTENT_TEXT_PLAIN, message.getBytes(StandardCharsets.UTF_8));
-            System.out.println(" [x] Sent '" + message + "'");
+            System.out.println(">>> Sent: " + message);
         }
     }
 }
@@ -54,7 +54,10 @@ class WorkQueuesFairDispatchSend {
  */
 class WorkQueuesFairDispatchRecv {
 
-    private static final String QUEUE_NAME = "task_queue";
+    private final static String QUEUE_NAME = "fair-dispatch-queue";
+
+    // 消息处理时间，模拟消费者1处理需2秒，消费2处理需6秒
+    private final static int PROCESS_TIME = 2;
 
     public static void main(String[] argv) throws Exception {
         ConnectionFactory factory = new ConnectionFactory();
@@ -71,12 +74,11 @@ class WorkQueuesFairDispatchRecv {
 
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             String message = new String(delivery.getBody(), "UTF-8");
-            System.out.println(" [x] Received '" + message + "'");
+            System.out.println("<<< Received: " + message);
             try {
-                int idx = Integer.parseInt(message.substring(message.length() - 1));
-                processMessage(idx);
+                processMessage();
             } finally {
-                System.out.println(" [x] Done");
+                System.out.println(" [√] Done!!! cost = " + PROCESS_TIME + "s.");
                 // 手动确认消息
                 channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
             }
@@ -86,14 +88,10 @@ class WorkQueuesFairDispatchRecv {
         });
     }
 
-    // 处理消息，模拟索引为偶数时处理快（2秒），为奇数时处理慢（6秒）
-    private static void processMessage(int idx) {
+    // 处理消息，模拟消息处理
+    private static void processMessage() {
         try {
-            long time = 6;
-            if (idx % 2 == 0) {
-                time = 2;
-            }
-            TimeUnit.SECONDS.sleep(time);
+            TimeUnit.SECONDS.sleep(PROCESS_TIME);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
