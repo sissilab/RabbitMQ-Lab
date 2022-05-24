@@ -61,7 +61,7 @@ class EmitLogTopic {
                 // 参数1 String exchange：设置交换机名
                 // 参数2 String routingKey：即设置 binding key（pattern）
                 channel.basicPublish(EXCHANGE_NAME, routingKey, null, message.getBytes("UTF-8"));
-                System.out.println(" [x] Sent '" + routingKey + "':'" + message + "'");
+                System.out.println(">>> Sent '" + routingKey + "':'" + message + "'");
             }
         }
     }
@@ -94,7 +94,7 @@ class ReceiveLogsTopic1 {
 
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             String message = new String(delivery.getBody(), "UTF-8");
-            System.out.println(" [*.orange.*] Received '" +
+            System.out.println("<<< [*.orange.*] Received '" +
                     delivery.getEnvelope().getRoutingKey() + "':'" + message + "'");
         };
         channel.basicConsume(queueName, true, deliverCallback, consumerTag -> { });
@@ -131,7 +131,7 @@ class ReceiveLogsTopic2 {
 
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             String message = new String(delivery.getBody(), "UTF-8");
-            System.out.printf("[%s] Received: routingKey=%s, message=%s\n", String.join(",", ROUTING_KEYS), delivery.getEnvelope().getRoutingKey(), message);
+            System.out.printf("<<< [%s] Received: routingKey=%s, message=%s\n", String.join(",", ROUTING_KEYS), delivery.getEnvelope().getRoutingKey(), message);
         };
         channel.basicConsume(queueName, true, deliverCallback, consumerTag -> {
         });

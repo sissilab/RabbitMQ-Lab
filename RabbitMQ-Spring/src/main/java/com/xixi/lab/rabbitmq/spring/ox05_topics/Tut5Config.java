@@ -26,22 +26,43 @@ public class Tut5Config {
      */
     @Bean
     public TopicExchange topic() {
-        return new TopicExchange("topic_X");
+        return new TopicExchange("spring-topic_X");
     }
 
+    /**
+     * 创建一个生产者
+     */
+    @Profile("sender")
+    @Bean
+    public Tut5Sender sender() {
+        return new Tut5Sender();
+    }
+
+    /**
+     * 消费者端配置
+     */
     @Profile("receiver")
     private static class ReceiverConfig {
 
+        /**
+         * 创建一个消费者
+         */
         @Bean
         public Tut5Receiver receiver() {
             return new Tut5Receiver();
         }
 
+        /**
+         * 临时队列1
+         */
         @Bean
         public Queue autoDeleteQueue1() {
             return new AnonymousQueue();
         }
 
+        /**
+         * 临时队列2
+         */
         @Bean
         public Queue autoDeleteQueue2() {
             return new AnonymousQueue();
@@ -70,13 +91,5 @@ public class Tut5Config {
         public Binding binding2a(TopicExchange topic, Queue autoDeleteQueue2) {
             return BindingBuilder.bind(autoDeleteQueue2).to(topic).with("lazy.#");
         }
-
     }
-
-    @Profile("sender")
-    @Bean
-    public Tut5Sender sender() {
-        return new Tut5Sender();
-    }
-
 }
