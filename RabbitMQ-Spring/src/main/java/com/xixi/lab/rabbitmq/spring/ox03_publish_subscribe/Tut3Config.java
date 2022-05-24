@@ -16,11 +16,20 @@ import org.springframework.context.annotation.Profile;
 public class Tut3Config {
 
     /**
-     * 创建一个fanout类型的交换机
+     * 创建生产者
+     */
+    @Profile("sender")
+    @Bean
+    public Tut3Sender sender() {
+        return new Tut3Sender();
+    }
+
+    /**
+     * 创建一个fanout类型的交换机（默认持久化的）
      */
     @Bean
     public FanoutExchange fanout() {
-        return new FanoutExchange("fanout_X");
+        return new FanoutExchange("spring-fanout-X");
     }
 
     /**
@@ -77,14 +86,5 @@ public class Tut3Config {
         public Tut3Receiver receiver() {
             return new Tut3Receiver();
         }
-    }
-
-    /**
-     * 创建生产者
-     */
-    @Profile("sender")
-    @Bean
-    public Tut3Sender sender() {
-        return new Tut3Sender();
     }
 }

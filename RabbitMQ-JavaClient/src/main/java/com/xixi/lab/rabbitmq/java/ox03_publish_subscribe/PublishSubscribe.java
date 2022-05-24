@@ -33,6 +33,7 @@ public class PublishSubscribe {
 
 /**
  * 生产者：发送日志消息到指定交换机（logs_X）中，声明交换为fanout类型（广播）
+ * fanout类型的交换机会将接收到的所有消息广播到所有与之绑定的队列中
  */
 class EmitLog {
 
@@ -53,14 +54,14 @@ class EmitLog {
             // 参数1 String exchange：设置交换机名，之前为空串（Nameless exchange，默认交换机）。若exchange非空，则交由交换机来决定将消息放到哪些队列
             // 参数2 String routingKey：设置为空串，之前都为队列名，fanout类型交换机会忽略该值。若routingKey非空，则会根据此值，路由到指定队列中
             channel.basicPublish(EXCHANGE_NAME, "", null, message.getBytes("UTF-8"));
-            System.out.println(" [x] Sent '" + message + "'");
+            System.out.println(">>> Sent: " + message);
 
             // 控制台输入消息，回车发布
             Scanner scanner = new Scanner(System.in);
             while (scanner.hasNext()) {
                 String input = scanner.next();
                 channel.basicPublish(EXCHANGE_NAME, "", null, input.getBytes("UTF-8"));
-                System.out.println(" [x] Sent '" + input + "'");
+                System.out.println(">>> Sent: " + input);
             }
         }
     }
@@ -69,6 +70,7 @@ class EmitLog {
 /**
  * 消费者1：接收日志消息
  * 设置绑定关系：队列名（临时队列） <--> 交换机名（logs_X）
+ * 类似于 消费者1的临时队列 订阅了 交换机名（logs_X），一旦该交换机接收到生产者发布的消息，都会分发到消费者1的队列
  */
 class ReceiveLogs1 {
 
@@ -88,11 +90,11 @@ class ReceiveLogs1 {
         // 设置Bindings关系：队列名 <--> 交换机名（routingKey为空串，fanout类型交换机会忽略该值）
         channel.queueBind(queueName, EXCHANGE_NAME, "");
 
-        System.out.println(" [*] 消费者1：Waiting for messages. To exit press CTRL+C");
+        System.out.printf(" [*] 消费者1 (%s)：Waiting for messages. To exit press CTRL+C\n", queueName);
 
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             String message = new String(delivery.getBody(), "UTF-8");
-            System.out.println(" [x] 消费者1：Received '" + message + "'");
+            System.out.println("<<< 消费者1：Received: " + message);
         };
         channel.basicConsume(queueName, true, deliverCallback, consumerTag -> { });
     }
@@ -101,6 +103,7 @@ class ReceiveLogs1 {
 /**
  * 消费者2：接收日志消息
  * 设置绑定关系：队列名（临时队列） <--> 交换机名（logs_X）
+ * 类似于 消费者2的临时队列 也订阅了 交换机名（logs_X），一旦该交换机接收到生产者发布的消息，也都会分发到消费者2的队列
  */
 class ReceiveLogs2 {
 
@@ -120,11 +123,11 @@ class ReceiveLogs2 {
         // 设置Bindings关系：队列名 <--> 交换机名（routingKey为空串，fanout类型交换机会忽略该值）
         channel.queueBind(queueName, EXCHANGE_NAME, "");
 
-        System.out.println(" [*] 消费者2：Waiting for messages. To exit press CTRL+C");
+        System.out.printf(" [*] 消费者2 (%s)：Waiting for messages. To exit press CTRL+C\n", queueName);
 
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             String message = new String(delivery.getBody(), "UTF-8");
-            System.out.println(" [x] 消费者2：Received '" + message + "'");
+            System.out.println("<<< 消费者2：Received: " + message);
         };
         channel.basicConsume(queueName, true, deliverCallback, consumerTag -> { });
     }
