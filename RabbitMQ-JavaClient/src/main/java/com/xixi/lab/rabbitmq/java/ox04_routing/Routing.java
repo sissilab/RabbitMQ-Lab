@@ -43,7 +43,7 @@ class EmitLogDirect {
 
             // routingKey 日志级别 -> message
             Map<String, String> bindingKeyMap = new HashMap<>();
-            bindingKeyMap.put("debug", "This a debug msg.");
+            bindingKeyMap.put("debug", "This a debug msg."); // debug 消息 未被绑定，直接丢弃
             bindingKeyMap.put("info", "This a info msg.");
             bindingKeyMap.put("warn", "This a warn msg.");
             bindingKeyMap.put("error", "This a error msg.");
@@ -55,20 +55,20 @@ class EmitLogDirect {
                 // 参数1：exchange：设置交换机名
                 // 参数2：routingKey：即设置 binding key
                 channel.basicPublish(EXCHANGE_NAME, routingKey, null, message.getBytes("UTF-8"));
-                System.out.println(" [x] Sent '" + routingKey + "':'" + message + "'");
+                System.out.println(">>> Sent '" + routingKey + "':'" + message + "'");
             }
         }
     }
 }
 
 /**
- * 消费者：绑定info和warn，只处理接收routingKey为info或warn的消息
+ * 消费者：绑定info、warn、error，只处理接收routingKey为info、warn、error的消息，并打印出来
  */
-class ReceiveLogsDirectInfoWarn {
+class ReceiveLogsDirectInfoWarnError {
 
     private static final String EXCHANGE_NAME = "direct_logs_X";
 
-    private static final String ROUTING_KEY = "info,warn";
+    private static final String ROUTING_KEY = "info,warn,error";
 
     public static void main(String[] argv) throws Exception {
         ConnectionFactory factory = new ConnectionFactory();
@@ -90,14 +90,14 @@ class ReceiveLogsDirectInfoWarn {
 
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             String message = new String(delivery.getBody(), "UTF-8");
-            System.out.println(" [x] Received '" + delivery.getEnvelope().getRoutingKey() + "':'" + message + "', printing...");
+            System.out.println("<<< Received '" + delivery.getEnvelope().getRoutingKey() + "':'" + message + "', printing...");
         };
         channel.basicConsume(queueName, true, deliverCallback, consumerTag -> { });
     }
 }
 
 /**
- * 消费者：绑定error，只处理接收routingKey为error的消息
+ * 消费者：绑定error，只处理接收routingKey为error的消息，保存到磁盘
  */
 class ReceiveLogsDirectError {
 
@@ -116,13 +116,16 @@ class ReceiveLogsDirectError {
         // 创建临时队列，一旦我们断开了消费者的连接，队列将被自动删除
         String queueName = channel.queueDeclare().getQueue();
         // 设置Bindings关系：交换机 --routingKey--> 队列名
-        channel.queueBind(queueName, EXCHANGE_NAME, ROUTING_KEY);
+        String[] routingKeyArr = ROUTING_KEY.split(",");
+        for (String routingKey : routingKeyArr) {
+            channel.queueBind(queueName, EXCHANGE_NAME, routingKey);
+        }
 
         System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
 
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             String message = new String(delivery.getBody(), "UTF-8");
-            System.out.println(" [x] Received '" + delivery.getEnvelope().getRoutingKey() + "':'" + message + "', saving to disk...");
+            System.out.println("<<< Received '" + delivery.getEnvelope().getRoutingKey() + "':'" + message + "', saving to disk...");
         };
         channel.basicConsume(queueName, true, deliverCallback, consumerTag -> { });
     }

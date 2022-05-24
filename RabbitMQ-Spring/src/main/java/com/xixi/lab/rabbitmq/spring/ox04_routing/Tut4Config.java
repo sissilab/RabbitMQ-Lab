@@ -13,8 +13,9 @@ import org.springframework.context.annotation.Profile;
  * 启动生产者：--server.port=8080 --spring.profiles.active=routing,sender
  *
  * 下面构建的绑定关系：
- *      临时队列1 autoDeleteQueue1 只处理 orange、black
- *      临时队列2 autoDeleteQueue2 只处理 green、black
+ *      临时队列1 autoDeleteQueue1 只处理 info、warn、error
+ *      临时队列2 autoDeleteQueue2 只处理 error
+ *      debug 无人绑定，日志直接丢弃
  */
 @Profile("routing")
 @Configuration
@@ -25,65 +26,7 @@ public class Tut4Config {
      */
     @Bean
     public DirectExchange direct() {
-        return new DirectExchange("direct_X");
-    }
-
-    /**
-     * 消费者端的配置
-     */
-    @Profile("receiver")
-    private static class ReceiverConfig {
-
-        @Bean
-        public Queue autoDeleteQueue1() {
-            return new AnonymousQueue();
-        }
-
-        @Bean
-        public Queue autoDeleteQueue2() {
-            return new AnonymousQueue();
-        }
-
-        /**
-         * 构建绑定关系：临时队列1 autoDeleteQueue1 <--orange--> direct交换机
-         */
-        @Bean
-        public Binding binding1a(DirectExchange direct, Queue autoDeleteQueue1) {
-            return BindingBuilder.bind(autoDeleteQueue1).to(direct).with("orange");
-        }
-
-        /**
-         * 构建绑定关系：临时队列1 autoDeleteQueue1 <--black--> direct交换机
-         */
-        @Bean
-        public Binding binding1b(DirectExchange direct, Queue autoDeleteQueue1) {
-            return BindingBuilder.bind(autoDeleteQueue1).to(direct).with("black");
-        }
-
-        /**
-         * 构建绑定关系：临时队列1 autoDeleteQueue2 <--green--> direct交换机
-         */
-        @Bean
-        public Binding binding2a(DirectExchange direct, Queue autoDeleteQueue2) {
-            return BindingBuilder.bind(autoDeleteQueue2).to(direct).with("green");
-        }
-
-        /**
-         * 构建绑定关系：临时队列1 autoDeleteQueue2 <--black--> direct交换机
-         */
-        @Bean
-        public Binding binding2b(DirectExchange direct, Queue autoDeleteQueue2) {
-            return BindingBuilder.bind(autoDeleteQueue2).to(direct).with("black");
-        }
-
-        /**
-         * 消费者
-         */
-        @Bean
-        public Tut4Receiver receiver() {
-            return new Tut4Receiver();
-        }
-
+        return new DirectExchange("spring-direct-X");
     }
 
     /**
@@ -93,5 +36,68 @@ public class Tut4Config {
     @Bean
     public Tut4Sender sender() {
         return new Tut4Sender();
+    }
+
+    /**
+     * 消费者端的配置
+     */
+    @Profile("receiver")
+    private static class ReceiverConfig {
+
+        /**
+         * 创建一个临时队列1
+         */
+        @Bean
+        public Queue autoDeleteQueue1() {
+            return new AnonymousQueue();
+        }
+
+        /**
+         * 创建一个临时队列2
+         */
+        @Bean
+        public Queue autoDeleteQueue2() {
+            return new AnonymousQueue();
+        }
+
+        /**
+         * 构建绑定关系：临时队列1 autoDeleteQueue1 <--info--> direct交换机
+         */
+        @Bean
+        public Binding binding1Info(DirectExchange direct, Queue autoDeleteQueue1) {
+            return BindingBuilder.bind(autoDeleteQueue1).to(direct).with("info");
+        }
+
+        /**
+         * 构建绑定关系：临时队列1 autoDeleteQueue1 <--warn--> direct交换机
+         */
+        @Bean
+        public Binding binding1Warn(DirectExchange direct, Queue autoDeleteQueue1) {
+            return BindingBuilder.bind(autoDeleteQueue1).to(direct).with("warn");
+        }
+
+        /**
+         * 构建绑定关系：临时队列1 autoDeleteQueue1 <--error--> direct交换机
+         */
+        @Bean
+        public Binding binding1Error(DirectExchange direct, Queue autoDeleteQueue1) {
+            return BindingBuilder.bind(autoDeleteQueue1).to(direct).with("error");
+        }
+
+        /**
+         * 构建绑定关系：临时队列2 autoDeleteQueue2 <--error--> direct交换机
+         */
+        @Bean
+        public Binding binding2Error(DirectExchange direct, Queue autoDeleteQueue2) {
+            return BindingBuilder.bind(autoDeleteQueue2).to(direct).with("error");
+        }
+
+        /**
+         * 消费者
+         */
+        @Bean
+        public Tut4Receiver receiver() {
+            return new Tut4Receiver();
+        }
     }
 }
