@@ -14,3 +14,6 @@ spring:
               acknowledge-mode: auto
               # 预取值 qos，默认 250
               #prefetch: 1
+      #template:
+        # 回调超时时间
+        #reply-timeout: -1
