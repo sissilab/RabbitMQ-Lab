@@ -17,7 +17,7 @@ public class Tut6Client {
     @Autowired
     private DirectExchange exchange;
 
-    private int start = 40;
+    private int start = 0;
 
     @Scheduled(fixedDelay = 1000, initialDelay = 500)
     public void send() {

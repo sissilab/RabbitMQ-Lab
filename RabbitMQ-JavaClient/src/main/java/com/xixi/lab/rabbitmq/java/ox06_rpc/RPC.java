@@ -15,9 +15,9 @@ import java.util.concurrent.TimeoutException;
  * @desc: Request/reply pattern example
  * @url: https://www.rabbitmq.com/tutorials/tutorial-six-java.html
  *
- * 这里使用RabbitMQ来实现RPC：客户端作为生产者通过队列rpc_queue发送请求计算的请求 --> 服务端作为队列rpc_queue的消费者，一旦接收到消息，就开始计算，
- *      当计算完成后，通过客户端创建并设置的临时队列（replyTo），此时服务端作为临时队列（从replyTo获取临时队列名）的生产者，将计算结果发布出去
- *      --> 客户端作为临时队列的消费者，监听服务端返回的计算结果，拿到计算结果后，即完成一整个RPC过程
+     * 这里使用RabbitMQ来实现RPC：客户端作为生产者通过队列rpc_queue发送请求计算的请求 --> 服务端作为队列rpc_queue的消费者，一旦接收到消息，就开始计算，
+     *      当计算完成后，通过客户端创建并设置的临时队列（replyTo），此时服务端作为临时队列（从replyTo获取临时队列名）的生产者，将计算结果发布出去
+     *      --> 客户端作为临时队列的消费者，监听服务端返回的计算结果，拿到计算结果后，即完成一整个RPC过程
  *
  * 可看到，客户端和服务端 即为生产者，又为消费者
  */
