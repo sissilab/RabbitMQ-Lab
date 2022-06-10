@@ -1242,7 +1242,7 @@ public class Tut3Receiver {
 
 下面以日志系统为例，声明一个 direct 类型交换机，将 error 消息发送一个消费者，并保存到磁盘，将 info、error、warn 的消息发送给另一个消费者，并打印出来，其他消息，如 debug 消息 会被丢弃。
 
-![routing的消息传递](assets/seven-messaging-mode/xxxrouting的消息传递.png)
+![routing的消息传递](assets/seven-messaging-mode/routing的消息传递.png)
 
 ## 4.1. Java Client 实现
 
@@ -1840,7 +1840,7 @@ RPC（Remote Procedure Call），即远程过程调用，它是一种通过网�
 3. 服务端从队列 rpc_queue 接收到来自客户端的计算请求，进行计算处理，并将计算结果发布到客户端传递过来的回调队列 `replyTo` 中，并携带 `correlationId`
 4. 客户端监听回调队列 `replyTo`，等到有返回结果，先检查 `correlationId` 确认与请求是否匹配，最终客户端拿到真正计算结果。
 
-![RPC的消息传递](assets/seven-messaging-mode/xxxRPC的消息传递.png)
+![RPC的消息传递](assets/seven-messaging-mode/RPC的消息传递.png)
 
 ## 6.1. Java Client 实现
 
