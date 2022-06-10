@@ -13,22 +13,22 @@
 Java Client 的 Maven 所需依赖如下：
 ```xml
 <dependency>
-    <groupId>com.rabbitmq</groupId>
-    <artifactId>amqp-client</artifactId>
-    <version>5.7.1</version>
+  <groupId>com.rabbitmq</groupId>
+  <artifactId>amqp-client</artifactId>
+  <version>5.7.1</version>
 </dependency>
 <dependency>
-    <groupId>org.slf4j</groupId>
-    <artifactId>slf4j-simple</artifactId>
-    <version>1.7.26</version>
+<groupId>org.slf4j</groupId>
+<artifactId>slf4j-simple</artifactId>
+<version>1.7.26</version>
 </dependency>
 ```
 
 Spring Boot 的 Maven 所需依赖如下：
 ```xml
 <dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-amqp</artifactId>
+  <groupId>org.springframework.boot</groupId>
+  <artifactId>spring-boot-starter-amqp</artifactId>
 </dependency>
 ```
 
@@ -40,7 +40,7 @@ RabbitMQ 是一个消息中间件，它可以接收和转发消息。RabbitMQ �
 - **队列（Queue，下图红色区域）**：队列好比一个邮箱，它位于 RabbitMQ 内部，用来存储消息。队列的存储空间受限于服务器的内存和磁盘大小，它本质上是一个大的消息缓冲区。多个生产者可以发送消息到队列中，多个消费者也可以从队列中接收消息。
 - **消费者（C，Consumer）**：等待从队列接收消息。
 
-![hello-world的消息传递](https://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/hello-world%E7%9A%84%E6%B6%88%E6%81%AF%E4%BC%A0%E9%80%92.pnghttps://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/hello-world的消息传递.png)
+![hello-world的消息传递](assets/seven-messaging-mode/hello-world的消息传递.png)
 
 下代码示例为：
 仅有一个生产者将消息放入 hello-queue 队列中，有一个消费者监听 hello-queue 队列，并将接收到的消息打印出来。
@@ -204,24 +204,24 @@ public class Tut1Receiver {
 以上代码为 Spring Boot 实现方式，为了模拟生产和消费程序，以 IDEA 工具为例，新增2个 Spring Boot 启动配置，并通过设置 Program arguments 来分别启动生产者和消费者程序。通过 `--spring-profiles-active` 实现加载所配置的类，以达到区分生产者和消费者程序的目的。
 
 - 生产者的启动配置：
-  ![hello-world-sender的IDEA启动配置](https://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/hello-world%E7%9A%84%E6%B6%88%E6%81%AF%E4%BC%A0%E9%80%92.pnghttps://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/hello-world-sender的IDEA启动配置.png)
+  ![hello-world-sender的IDEA启动配置](assets/seven-messaging-mode/hello-world-sender的IDEA启动配置.png)
 
 - 消费者的启动配置：
-  ![hello-world-receiver的IDEA启动配置](https://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/hello-world%E7%9A%84%E6%B6%88%E6%81%AF%E4%BC%A0%E9%80%92.pnghttps://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/hello-world-receiver的IDEA启动配置.png)
+  ![hello-world-receiver的IDEA启动配置](assets/seven-messaging-mode/hello-world-receiver的IDEA启动配置.png)
 
 输出结果：
 - 生产者的输出：
-  ![hello-world-sender的输出结果](https://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/hello-world%E7%9A%84%E6%B6%88%E6%81%AF%E4%BC%A0%E9%80%92.pnghttps://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/hello-world-sender的输出结果.png)
+  ![hello-world-sender的输出结果](assets/seven-messaging-mode/hello-world-sender的输出结果.png)
 
 - 消费者的输出：
-  ![hello-world-receiver的输出结果](https://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/hello-world%E7%9A%84%E6%B6%88%E6%81%AF%E4%BC%A0%E9%80%92.pnghttps://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/hello-world-receiver的输出结果.png)
+  ![[hello-world-receiver的输出结果](assets/seven-messaging-mode/hello-world-receiver的输出结果.png)
 
 # 2. Work queues 工作队列（任务分发）模式
 
 [[#^885f53|上一节]]只有一个消费者，所有的消息都只有分发到那个唯一的消费者去处理，本节将增加多个消费者，一起来承担生产者发出的消息。工作队列（Work Queues）模式，又叫任务队列，可以将消息分发给多个消费者来处理，面对大量资源任务时，可横向扩展消费者，并行执行任务。
 > 一个生产者、一个默认交换机、一个队列（work-queue）、两个消费者。
 
-![work-queues的消息传递](https://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/hello-world%E7%9A%84%E6%B6%88%E6%81%AF%E4%BC%A0%E9%80%92.pnghttps://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/work-queues的消息传递.png)
+![[work-queues的消息传递.png|400]]
 
 本节主要内容为：
 - **[[#^93402c|轮询分发]]**：多个消费者的工作队列模式，采用自动消息确认，生产者发布的所有消息会按序分发（平均分配）给每一个消费者，若面临大量消息处理的需求，可横向扩展消费者数量，提升处理效率。但是当某个消费挂掉后，当前该消费者正处理的消息和已分发未处理的消息都会被丢弃。
@@ -301,7 +301,7 @@ class WorkQueuesAutoAckRecv {
 ```
 
 > 如何在 IDEA 启动多个实例：在 Run/Debug Configurations 中 Build and run 那行点击 Modify options，并选中 ==Allow multiple instance== 即可，启动配置如下：
-> ![WorkQueuesAutoAckRecv启动多个实例配置](https://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/hello-world%E7%9A%84%E6%B6%88%E6%81%AF%E4%BC%A0%E9%80%92.pnghttps://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/WorkQueuesAutoAckRecv启动多个实例配置.png)
+> ![[WorkQueuesAutoAckRecv启动多个实例配置.png]]
 
 输出结果：
 
@@ -921,8 +921,7 @@ spring:
 
 由上面的工作队列（Work Queues）可知，每个消息都会被分发到一个消费者，本节将介绍如何将同一个消息分发给多个消费者。发布订阅（Publish/Subscribe）模式是指生产者发布消息，所有订阅的消费者都可以接收到消息。如下图，实质上，生产者（P）发布消息，消息是传递到交换机（X，Exchanges）上，交换机再将消息分发到已绑定的消费者队列中。
 
-> ![publish-subscribe的消息传递](https://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/hello-world%E7%9A%84%E6%B6%88%E6%81%AF%E4%BC%A0%E9%80%92.pnghttps://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/publish-subscribe的消息传递.png)
-
+![[publish-subscribe的消息传递.png|400]]
 
 RabbitMQ 中传递消息的核心思想是：生产者从不会将消息直接传递到队列中，实际上，生产者并不知道这些消息被传递到了哪些队列中。相反，生产者仅能将消息发送到交换机中。交换机要做的工作非常单纯，一方面接收来自生产者的消息，另一方面将消息推送到队列中。交换机必须确切直到如何处理这些消息，是将消息放到指定某个队列中、还是将消息放到多个队列中？抑或是应该丢弃掉？这些都由交换机的类型来决定。
 
@@ -1233,17 +1232,16 @@ public class Tut3Receiver {
 （1）direct 交换机
 下图可知，交换机（X）为 direct 类型，绑定了2个队列 Q1 和 Q2，其中，队列 Q1 的绑定键为 orange，队列 Q2 的绑定键为 black 和 green。在这种绑定情况下，生产者（P）发布消息到交换机（X）上，其中，绑定键为 orange 的消息会发往队列 Q1，绑定键为 black 和 green 的消息会发往队列 Q2，其他的消息则会被丢弃。
 
-![routing-direct-exchange](https://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/hello-world%E7%9A%84%E6%B6%88%E6%81%AF%E4%BC%A0%E9%80%92.pnghttps://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/routing-direct-exchange.png)
-
+![[routing-direct-exchange.png|400]]
 
 （2）多重绑定（Multiple bindings）
 若交换机（X）为 direct 类型，但是它绑定的多个队列的绑定键都相同，那么这种情况则与 fanout 效果类似。如下图，发布的消息的绑定键为 black 的消息既会发到 Q1 队列，也会发到 Q2 队列。
 
-![routing-multiple-bindings](https://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/hello-world%E7%9A%84%E6%B6%88%E6%81%AF%E4%BC%A0%E9%80%92.pnghttps://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/routing-multiple-bindings.png)
+![[routing-multiple-bindings.png|400]]
 
 下面以日志系统为例，声明一个 direct 类型交换机，将 error 消息发送一个消费者，并保存到磁盘，将 info、error、warn 的消息发送给另一个消费者，并打印出来，其他消息，如 debug 消息 会被丢弃。
 
-![routing的消息传递](https://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/hello-world%E7%9A%84%E6%B6%88%E6%81%AF%E4%BC%A0%E9%80%92.pnghttps://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/routing的消息传递.png)
+![[routing的消息传递.png|400]]
 
 ## 4.1. Java Client 实现
 
@@ -1533,8 +1531,7 @@ topic 类型的交换机可以实现模糊匹配，需要注意的是，生产�
 - `*.orange.*`：共3个单词，中间为 orange，第一个和最后一个为任一单词，如 quick.orange.rabbit、lazy.orange.elephant、quick.orange.fox
 - `*.*.rabbit`：共3个单词，最后一个为 rabbit，前2个为任一单词，如 quick.orange.rabbit
 - `lazy.#`：以 azy 开头的所有消息，如：lazy.orange.elephant、lazy.brown.fox
-  ![topics的消息传递](https://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/hello-world%E7%9A%84%E6%B6%88%E6%81%AF%E4%BC%A0%E9%80%92.pnghttps://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/topics的消息传递.png)
-
+  ![[topics的消息传递.png|450]]
 
 ## 5.1. Java Client 实现
 
@@ -1842,8 +1839,7 @@ RPC（Remote Procedure Call），即远程过程调用，它是一种通过网�
 3. 服务端从队列 rpc_queue 接收到来自客户端的计算请求，进行计算处理，并将计算结果发布到客户端传递过来的回调队列 `replyTo` 中，并携带 `correlationId`
 4. 客户端监听回调队列 `replyTo`，等到有返回结果，先检查 `correlationId` 确认与请求是否匹配，最终客户端拿到真正计算结果。
 
-![RPC的消息传递](https://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/hello-world%E7%9A%84%E6%B6%88%E6%81%AF%E4%BC%A0%E9%80%92.pnghttps://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/RPC的消息传递.png)
-
+![[RPC的消息传递.png|550]]
 
 ## 6.1. Java Client 实现
 
@@ -1851,86 +1847,86 @@ RPC（Remote Procedure Call），即远程过程调用，它是一种通过网�
 ```java
 class RPCClient implements AutoCloseable {
 
-    private Connection connection;
-    private Channel channel;
-    private String QUEUE_NAME = "rpc_queue";
+  private Connection connection;
+  private Channel channel;
+  private String QUEUE_NAME = "rpc_queue";
 
-    // 初始化好 连接Connection 和 信道Channel
-    public RPCClient() throws IOException, TimeoutException {
-        ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost("localhost");
+  // 初始化好 连接Connection 和 信道Channel
+  public RPCClient() throws IOException, TimeoutException {
+    ConnectionFactory factory = new ConnectionFactory();
+    factory.setHost("localhost");
 
-        connection = factory.newConnection();
-        channel = connection.createChannel();
+    connection = factory.newConnection();
+    channel = connection.createChannel();
+  }
+
+  public static void main(String[] argv) {
+    try (RPCClient rpcClient = new RPCClient()) {
+      for (int i = 0; i < 32; i++) {
+        String num = Integer.toString(i);
+        System.out.println(">>> [C] Requesting fib(" + num + ")......");
+        String response = rpcClient.call(num);
+        System.out.printf("<<< [C] Got: num=%s, response=%s\n\n", num, response);
+      }
+    } catch (IOException | TimeoutException | InterruptedException e) {
+      e.printStackTrace();
     }
+  }
 
-    public static void main(String[] argv) {
-        try (RPCClient rpcClient = new RPCClient()) {
-            for (int i = 0; i < 32; i++) {
-                String num = Integer.toString(i);
-                System.out.println(">>> [C] Requesting fib(" + num + ")......");
-                String response = rpcClient.call(num);
-                System.out.printf("<<< [C] Got: num=%s, response=%s\n\n", num, response);
-            }
-        } catch (IOException | TimeoutException | InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
+  /**
+   * 客户端发起计算请求，让远程服务端来处理计算该请求
+   *
+   * @param numMsg
+   * @return
+   * @throws IOException
+   * @throws InterruptedException
+   */
+  public String call(String numMsg) throws IOException, InterruptedException {
+    // 随机生成一个 correlationId，关联请求与返回：发布给服务端时携带该值，服务端处理好再次发布返回计算结果后，根据该值来确定是哪个请求
+    final String corrId = UUID.randomUUID().toString();
 
-    /**
-     * 客户端发起计算请求，让远程服务端来处理计算该请求
-     *
-     * @param numMsg
-     * @return
-     * @throws IOException
-     * @throws InterruptedException
-     */
-    public String call(String numMsg) throws IOException, InterruptedException {
-        // 随机生成一个 correlationId，关联请求与返回：发布给服务端时携带该值，服务端处理好再次发布返回计算结果后，根据该值来确定是哪个请求
-        final String corrId = UUID.randomUUID().toString();
+    // 创建临时队列，一旦我们断开了消费者的连接，队列将被自动删除（auto-delete=true、exclusive=true）
+    String replyQueueName = channel.queueDeclare().getQueue();
+    // 构建基本属性
+    AMQP.BasicProperties props = new AMQP.BasicProperties
+            .Builder()
+            .correlationId(corrId) // correlationId
+            .replyTo(replyQueueName) // replyTo: a callback queue
+            .build();
 
-        // 创建临时队列，一旦我们断开了消费者的连接，队列将被自动删除（auto-delete=true、exclusive=true）
-        String replyQueueName = channel.queueDeclare().getQueue();
-        // 构建基本属性
-        AMQP.BasicProperties props = new AMQP.BasicProperties
-                .Builder()
-                .correlationId(corrId) // correlationId
-                .replyTo(replyQueueName) // replyTo: a callback queue
-                .build();
+    System.out.printf(">>> [C] Publish: corrId=%s, replyQueueName=%s\n", corrId, replyQueueName);
+    // >>>>>>1.发布：发布计算请求到队列 rpc_queue 中，让远程的服务端通过该队列取到数据并进行计算处理
+    channel.basicPublish("", QUEUE_NAME, props, numMsg.getBytes("UTF-8"));
 
-        System.out.printf(">>> [C] Publish: corrId=%s, replyQueueName=%s\n", corrId, replyQueueName);
-        // >>>>>>1.发布：发布计算请求到队列 rpc_queue 中，让远程的服务端通过该队列取到数据并进行计算处理
-        channel.basicPublish("", QUEUE_NAME, props, numMsg.getBytes("UTF-8"));
+    // 构建一个容器为1的阻塞队列
+    final BlockingQueue<String> responseQueue = new ArrayBlockingQueue<>(1);
 
-        // 构建一个容器为1的阻塞队列
-        final BlockingQueue<String> responseQueue = new ArrayBlockingQueue<>(1);
+    // <<<<<<接收：当服务端计算完成后，会重新将结果发布到队列中，这里消费接收服务端的计算结果
+    String ctag = channel.basicConsume(replyQueueName, true,
+            // DeliverCallback
+            (consumerTag, delivery) -> {
+              // 4. 客户端作为随机队列的消费者，监听服务端返回计算结果的回调
+              // 通过 correlationId 来保证此刻接收到计算结果，与当初发布的计算请求 为同一个
+              if (delivery.getProperties().getCorrelationId().equals(corrId)) {
+                // 将计算结果加入阻塞队列
+                responseQueue.offer(new String(delivery.getBody(), "UTF-8"));
+              }
+            },
+            // CancelCallback
+            consumerTag -> {
+            });
+    System.out.println("ctag=" + ctag);
 
-        // <<<<<<接收：当服务端计算完成后，会重新将结果发布到队列中，这里消费接收服务端的计算结果
-        String ctag = channel.basicConsume(replyQueueName, true,
-                // DeliverCallback
-                (consumerTag, delivery) -> {
-                    // 4. 客户端作为随机队列的消费者，监听服务端返回计算结果的回调
-                    // 通过 correlationId 来保证此刻接收到计算结果，与当初发布的计算请求 为同一个
-                    if (delivery.getProperties().getCorrelationId().equals(corrId)) {
-                        // 将计算结果加入阻塞队列
-                        responseQueue.offer(new String(delivery.getBody(), "UTF-8"));
-                    }
-                },
-                // CancelCallback
-                consumerTag -> {
-                });
-        System.out.println("ctag=" + ctag);
+    // 从队列获取数据，若为空，则一直等待（阻塞），直到队列添加了一条数据
+    String result = responseQueue.take();
+    channel.basicCancel(ctag); // 显示地取消客户端消费者的订阅
+    return result;
+  }
 
-        // 从队列获取数据，若为空，则一直等待（阻塞），直到队列添加了一条数据
-        String result = responseQueue.take();
-        channel.basicCancel(ctag); // 显示地取消客户端消费者的订阅
-        return result;
-    }
-
-    @Override
-    public void close() throws IOException {
-        connection.close();
-    }
+  @Override
+  public void close() throws IOException {
+    connection.close();
+  }
 }
 ```
 
@@ -1938,82 +1934,82 @@ class RPCClient implements AutoCloseable {
 ```java
 class RPCServer {
 
-    private static final String QUEUE_NAME = "rpc_queue";
+  private static final String QUEUE_NAME = "rpc_queue";
 
-    // 递归计算斐波那契数列
-    private static int fib(int n) {
-        if (n == 0) {
-            return 0;
-        }
-        if (n == 1) {
-            return 1;
-        }
-        return fib(n - 1) + fib(n - 2);
+  // 递归计算斐波那契数列
+  private static int fib(int n) {
+    if (n == 0) {
+      return 0;
     }
-
-    public static void main(String[] argv) throws Exception {
-        ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost("localhost");
-
-        try (Connection connection = factory.newConnection();
-             Channel channel = connection.createChannel()) {
-            // 声明一个队列rpc_queue
-            channel.queueDeclare(QUEUE_NAME, false, false, false, null);
-            // 清除指定队列（rpc_queue）中的所有数据
-            channel.queuePurge(QUEUE_NAME);
-
-            channel.basicQos(1); // 一次只接收一条消息
-
-            System.out.println(" [*] Awaiting RPC requests...");
-
-            Object monitor = new Object();
-            DeliverCallback deliverCallback = (consumerTag, delivery) -> {
-                // 2. 客户端作为消费者从队列rpc_queue接收计算请
-                // 构建响应客户端的发布消息的参数
-                AMQP.BasicProperties replyProps = new AMQP.BasicProperties
-                        .Builder()
-                        .correlationId(delivery.getProperties().getCorrelationId()) // correlationId：来自客户端的设置，现在重新返回给客户端
-                        .build();
-
-                String response = "";
-
-                try {
-                    String numMsg = new String(delivery.getBody(), "UTF-8");
-                    int num = Integer.parseInt(numMsg);
-
-                    System.out.printf("<<< [S] Start to calculate: fib(" + numMsg + ")... replyTo=%s, correlationId=%s\n",
-                            delivery.getProperties().getReplyTo(), delivery.getProperties().getCorrelationId());
-                    response += fib(num); // 实际计算处理
-                    System.out.printf(">>> [S] Done!!! response=%s\n\n", response);
-                } catch (RuntimeException e) {
-                    System.out.println("[S] 异常: " + e.toString());
-                } finally {
-                    // >>>>>>3. 发布：服务端计算完 fib() 后，将结果 response + correlationId 发布到队列 replyTo（由客户端创建的随机队列） 中，等待客户端接收该计算结果
-                    channel.basicPublish("", delivery.getProperties().getReplyTo(), replyProps, response.getBytes("UTF-8"));
-                    // 手动答复消息已处理，若出现异常致使没有答复，则该消息会重新回到队列中，再重新分发下去
-                    channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
-                    // RabbitMq consumer worker thread notifies the RPC server owner thread
-                    synchronized (monitor) {
-                        monitor.notify();
-                    }
-                }
-            };
-
-            // <<<<<<接收：接收来自客户端发过来的计算请求，在回调 deliverCallback 中去计算，并将结果再次发布到队列中，等待客户端接收该计算结果
-            channel.basicConsume(QUEUE_NAME, false, deliverCallback, (consumerTag -> {
-            }));
-            // Wait and be prepared to consume the message from RPC client.
-            while (true) {
-                synchronized (monitor) {
-                    try {
-                        monitor.wait();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }
+    if (n == 1) {
+      return 1;
     }
+    return fib(n - 1) + fib(n - 2);
+  }
+
+  public static void main(String[] argv) throws Exception {
+    ConnectionFactory factory = new ConnectionFactory();
+    factory.setHost("localhost");
+
+    try (Connection connection = factory.newConnection();
+         Channel channel = connection.createChannel()) {
+      // 声明一个队列rpc_queue
+      channel.queueDeclare(QUEUE_NAME, false, false, false, null);
+      // 清除指定队列（rpc_queue）中的所有数据
+      channel.queuePurge(QUEUE_NAME);
+
+      channel.basicQos(1); // 一次只接收一条消息
+
+      System.out.println(" [*] Awaiting RPC requests...");
+
+      Object monitor = new Object();
+      DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+        // 2. 客户端作为消费者从队列rpc_queue接收计算请
+        // 构建响应客户端的发布消息的参数
+        AMQP.BasicProperties replyProps = new AMQP.BasicProperties
+                .Builder()
+                .correlationId(delivery.getProperties().getCorrelationId()) // correlationId：来自客户端的设置，现在重新返回给客户端
+                .build();
+
+        String response = "";
+
+        try {
+          String numMsg = new String(delivery.getBody(), "UTF-8");
+          int num = Integer.parseInt(numMsg);
+
+          System.out.printf("<<< [S] Start to calculate: fib(" + numMsg + ")... replyTo=%s, correlationId=%s\n",
+                  delivery.getProperties().getReplyTo(), delivery.getProperties().getCorrelationId());
+          response += fib(num); // 实际计算处理
+          System.out.printf(">>> [S] Done!!! response=%s\n\n", response);
+        } catch (RuntimeException e) {
+          System.out.println("[S] 异常: " + e.toString());
+        } finally {
+          // >>>>>>3. 发布：服务端计算完 fib() 后，将结果 response + correlationId 发布到队列 replyTo（由客户端创建的随机队列） 中，等待客户端接收该计算结果
+          channel.basicPublish("", delivery.getProperties().getReplyTo(), replyProps, response.getBytes("UTF-8"));
+          // 手动答复消息已处理，若出现异常致使没有答复，则该消息会重新回到队列中，再重新分发下去
+          channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
+          // RabbitMq consumer worker thread notifies the RPC server owner thread
+          synchronized (monitor) {
+            monitor.notify();
+          }
+        }
+      };
+
+      // <<<<<<接收：接收来自客户端发过来的计算请求，在回调 deliverCallback 中去计算，并将结果再次发布到队列中，等待客户端接收该计算结果
+      channel.basicConsume(QUEUE_NAME, false, deliverCallback, (consumerTag -> {
+      }));
+      // Wait and be prepared to consume the message from RPC client.
+      while (true) {
+        synchronized (monitor) {
+          try {
+            monitor.wait();
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+          }
+        }
+      }
+    }
+  }
 }
 ```
 
@@ -2034,72 +2030,72 @@ Spring Boot 可直接使用 `RabbitTemplate.convertSendAndReceive()` 来实现RP
 @Configuration
 public class Tut6Config {
 
-    public final static String EXCHANGE_NAME = "spring-rpc-direct-X";
+  public final static String EXCHANGE_NAME = "spring-rpc-direct-X";
 
-    public final static String ROUTING_KEY = "rpc";
+  public final static String ROUTING_KEY = "rpc";
 
-    public final static String REQUEST_QUEUE = "spring-rpc-request-queue";
+  public final static String REQUEST_QUEUE = "spring-rpc-request-queue";
+
+  /**
+   * 客户端配置
+   */
+  @Profile("client")
+  private static class ClientConfig {
 
     /**
-     * 客户端配置
+     * 客户端往direct交换机(routingKey=rpc)发送计算请求
      */
-    @Profile("client")
-    private static class ClientConfig {
-
-        /**
-         * 客户端往direct交换机(routingKey=rpc)发送计算请求
-         */
-        @Bean
-        public DirectExchange exchange() {
-            return new DirectExchange(EXCHANGE_NAME);
-        }
-
-        /**
-         * 创建客户端
-         */
-        @Bean
-        public Tut6Client client() {
-            return new Tut6Client();
-        }
-
+    @Bean
+    public DirectExchange exchange() {
+      return new DirectExchange(EXCHANGE_NAME);
     }
 
     /**
-     * 服务端配置
+     * 创建客户端
      */
-    @Profile("server")
-    private static class ServerConfig {
-
-        @Bean
-        public DirectExchange exchange() {
-            return new DirectExchange(EXCHANGE_NAME);
-        }
-
-        /**
-         * 创建队列 spring-rpc-request-queue
-         */
-        @Bean
-        public Queue queue() {
-            return new Queue(REQUEST_QUEUE);
-        }
-
-        /**
-         * 构建绑定关系：队列spring-rpc-request-queue <-- rpc --> direct交换机 (spring-rpc-direct-X)
-         * 服务端通过该绑定，将客户端的计算请求发布到 队列 spring-rpc-request-queue 中
-         */
-        @Bean
-        public Binding binding(DirectExchange exchange, Queue queue) {
-            return BindingBuilder.bind(queue).to(exchange).with(ROUTING_KEY);
-        }
-
-        /**
-         * 创建服务端
-         */
-        @Bean
-        public Tut6Server server() {
-            return new Tut6Server();
-        }
+    @Bean
+    public Tut6Client client() {
+      return new Tut6Client();
     }
+
+  }
+
+  /**
+   * 服务端配置
+   */
+  @Profile("server")
+  private static class ServerConfig {
+
+    @Bean
+    public DirectExchange exchange() {
+      return new DirectExchange(EXCHANGE_NAME);
+    }
+
+    /**
+     * 创建队列 spring-rpc-request-queue
+     */
+    @Bean
+    public Queue queue() {
+      return new Queue(REQUEST_QUEUE);
+    }
+
+    /**
+     * 构建绑定关系：队列spring-rpc-request-queue <-- rpc --> direct交换机 (spring-rpc-direct-X)
+     * 服务端通过该绑定，将客户端的计算请求发布到 队列 spring-rpc-request-queue 中
+     */
+    @Bean
+    public Binding binding(DirectExchange exchange, Queue queue) {
+      return BindingBuilder.bind(queue).to(exchange).with(ROUTING_KEY);
+    }
+
+    /**
+     * 创建服务端
+     */
+    @Bean
+    public Tut6Server server() {
+      return new Tut6Server();
+    }
+  }
 }
 ```
 
@@ -2107,24 +2103,24 @@ public class Tut6Config {
 ```java
 public class Tut6Client {
 
-    @Autowired
-    private RabbitTemplate template;
+  @Autowired
+  private RabbitTemplate template;
 
-    @Autowired
-    private DirectExchange exchange;
+  @Autowired
+  private DirectExchange exchange;
 
-    private int start = 0;
+  private int start = 0;
 
-    @Scheduled(fixedDelay = 1000, initialDelay = 500)
-    public void send() {
-        System.out.println(">>> [C] Requesting fib(" + start + ")...");
-        StopWatch stopWatch = new StopWatch();
-        stopWatch.start();
-        // 发布消息
-        Integer response = (Integer) template.convertSendAndReceive(exchange.getName(), "rpc", start++);
-        stopWatch.stop();
-        System.out.printf("<<< [C] Got: response=%d, cost=%fs\n\n", response, stopWatch.getTotalTimeSeconds());
-    }
+  @Scheduled(fixedDelay = 1000, initialDelay = 500)
+  public void send() {
+    System.out.println(">>> [C] Requesting fib(" + start + ")...");
+    StopWatch stopWatch = new StopWatch();
+    stopWatch.start();
+    // 发布消息
+    Integer response = (Integer) template.convertSendAndReceive(exchange.getName(), "rpc", start++);
+    stopWatch.stop();
+    System.out.printf("<<< [C] Got: response=%d, cost=%fs\n\n", response, stopWatch.getTotalTimeSeconds());
+  }
 }
 ```
 
@@ -2132,24 +2128,24 @@ public class Tut6Client {
 ```java
 public class Tut6Server {
 
-    /**
-     * 监听 队列 spring-rpc-request-queue，接收来自客户端的计算请求
-     */
-    @RabbitListener(queues = Tut6Config.REQUEST_QUEUE)
-    // @SendTo("tut.rpc.replies") used when the client doesn't set replyTo.
-    public int fibonacci(int n) {
-        StopWatch stopWatch = new StopWatch();
-        stopWatch.start();
-        System.out.println("<<< [S] Received request for " + n);
-        int result = fib(n);
-        stopWatch.stop();
-        System.out.printf(" [S] Returned: result=%d, cost=%fs\n\n", result, stopWatch.getTotalTimeSeconds());
-        return result;
-    }
+  /**
+   * 监听 队列 spring-rpc-request-queue，接收来自客户端的计算请求
+   */
+  @RabbitListener(queues = Tut6Config.REQUEST_QUEUE)
+  // @SendTo("tut.rpc.replies") used when the client doesn't set replyTo.
+  public int fibonacci(int n) {
+    StopWatch stopWatch = new StopWatch();
+    stopWatch.start();
+    System.out.println("<<< [S] Received request for " + n);
+    int result = fib(n);
+    stopWatch.stop();
+    System.out.printf(" [S] Returned: result=%d, cost=%fs\n\n", result, stopWatch.getTotalTimeSeconds());
+    return result;
+  }
 
-    public int fib(int n) {
-        return n == 0 ? 0 : n == 1 ? 1 : (fib(n - 1) + fib(n - 2));
-    }
+  public int fib(int n) {
+    return n == 0 ? 0 : n == 1 ? 1 : (fib(n - 1) + fib(n - 2));
+  }
 }
 ```
 
@@ -2169,7 +2165,7 @@ public class Tut6Server {
 - **单个确认发布**：同步等待确认，简单，但吞吐量有限，发布速度慢。
 ```java
 static void publishMessagesIndividually() throws Exception {
-    try (Connection connection = createConnection()) {
+        try (Connection connection = createConnection()) {
         Channel channel = connection.createChannel();
 
         String queue = UUID.randomUUID().toString();
@@ -2179,23 +2175,23 @@ static void publishMessagesIndividually() throws Exception {
         channel.confirmSelect();
         long start = System.nanoTime();
         for (int i = 0; i < MESSAGE_COUNT; i++) {
-            String body = String.valueOf(i);
-            channel.basicPublish("", queue, null, body.getBytes());
-            //channel.waitForConfirmsOrDie(5_000); // 只有在消息被确认的时候才返回，若在指定时间内未确认则抛出异常TimeoutException
-            if (channel.waitForConfirms()) { // 等到消息确认
-                System.out.println(i + ": 消息发送成功");
-            }
+        String body = String.valueOf(i);
+        channel.basicPublish("", queue, null, body.getBytes());
+        //channel.waitForConfirmsOrDie(5_000); // 只有在消息被确认的时候才返回，若在指定时间内未确认则抛出异常TimeoutException
+        if (channel.waitForConfirms()) { // 等到消息确认
+        System.out.println(i + ": 消息发送成功");
+        }
         }
         long end = System.nanoTime();
         System.out.format("Published %,d messages individually in %,d ms%n", MESSAGE_COUNT, Duration.ofNanos(end - start).toMillis());
-    }
-}
+        }
+        }
 ```
 
 - **批量确认发布**：批量同步等待确认，简单，合理的吞吐量，一旦出现问题很难推断出是哪条消息出现了问题，实际仍为同步的，一样是阻塞消息的发布。
 ```java
 static void publishMessagesInBatch() throws Exception {
-    try (Connection connection = createConnection()) {
+        try (Connection connection = createConnection()) {
         Channel channel = connection.createChannel();
 
         String queue = UUID.randomUUID().toString();
@@ -2209,32 +2205,32 @@ static void publishMessagesInBatch() throws Exception {
 
         long start = System.nanoTime();
         for (int i = 0; i < MESSAGE_COUNT; i++) {
-            String body = String.valueOf(i);
-            channel.basicPublish("", queue, null, body.getBytes());
-            outstandingMessageCount++;
+        String body = String.valueOf(i);
+        channel.basicPublish("", queue, null, body.getBytes());
+        outstandingMessageCount++;
 
-            // 批量确认，每100条确认一次
-            if (outstandingMessageCount == batchSize) {
-                channel.waitForConfirmsOrDie(5_000);
-                System.out.println("消息确认, i=" + i);
-                outstandingMessageCount = 0;
-            }
+        // 批量确认，每100条确认一次
+        if (outstandingMessageCount == batchSize) {
+        channel.waitForConfirmsOrDie(5_000);
+        System.out.println("消息确认, i=" + i);
+        outstandingMessageCount = 0;
+        }
         }
         // 确保剩余未确认的消息完成确认
         if (outstandingMessageCount > 0) {
-            channel.waitForConfirmsOrDie(5_000);
-            System.out.println("剩余所有消息确认");
+        channel.waitForConfirmsOrDie(5_000);
+        System.out.println("剩余所有消息确认");
         }
         long end = System.nanoTime();
         System.out.format("Published %,d messages in batch in %,d ms%n", MESSAGE_COUNT, Duration.ofNanos(end - start).toMillis());
-    }
-}
+        }
+        }
 ```
 
 - **异步确认发布**：最佳性能和资源使用，在出现错误的情况下可以很好地控制，但是实现起来稍微难些。
 ```java
 static void handlePublishConfirmsAsynchronously() throws Exception {
-    try (Connection connection = createConnection()) {
+        try (Connection connection = createConnection()) {
         Channel channel = connection.createChannel();
 
         String queue = UUID.randomUUID().toString();
@@ -2249,31 +2245,31 @@ static void handlePublishConfirmsAsynchronously() throws Exception {
 
         // ack 回调
         ConfirmCallback ackCallback = (sequenceNumber, multiple) -> {
-            System.out.println("ackCallback: multiple=" + multiple + ", sequenceNumber=" + sequenceNumber);
-            // multiple: true 返回的是小于等于当前序列号的未确认消息; false 确认当前序列号消息
-            if (multiple) {
-                // headMap(sequenceNumber): 合获取key小于sequenceNumber的所有map集
-                ConcurrentNavigableMap<Long, String> confirmed = outstandingConfirms.headMap(sequenceNumber, true);
-                StringBuilder keySb = new StringBuilder();
-                for (Long seqNo : confirmed.keySet()) {
-                    keySb.append(seqNo).append(", ");
-                }
-                System.out.println("multiple=true: sequenceNumber=" + sequenceNumber + ">>" + keySb.toString());
-                confirmed.clear(); // 清除已确认的消息
-            } else {
-                // 清除当前sequenceNumber的已确认的消息
-                outstandingConfirms.remove(sequenceNumber);
-            }
+        System.out.println("ackCallback: multiple=" + multiple + ", sequenceNumber=" + sequenceNumber);
+        // multiple: true 返回的是小于等于当前序列号的未确认消息; false 确认当前序列号消息
+        if (multiple) {
+        // headMap(sequenceNumber): 合获取key小于sequenceNumber的所有map集
+        ConcurrentNavigableMap<Long, String> confirmed = outstandingConfirms.headMap(sequenceNumber, true);
+        StringBuilder keySb = new StringBuilder();
+        for (Long seqNo : confirmed.keySet()) {
+        keySb.append(seqNo).append(", ");
+        }
+        System.out.println("multiple=true: sequenceNumber=" + sequenceNumber + ">>" + keySb.toString());
+        confirmed.clear(); // 清除已确认的消息
+        } else {
+        // 清除当前sequenceNumber的已确认的消息
+        outstandingConfirms.remove(sequenceNumber);
+        }
         };
         // nack 回调
         ConfirmCallback nackCallback = (sequenceNumber, multiple) -> {
-            System.out.println("nackCallback: multiple=" + multiple + ", sequenceNumber=" + sequenceNumber);
-            String body = outstandingConfirms.get(sequenceNumber);
-            System.err.format(
-                    "Message with body %s has been nack-ed. Sequence number: %d, multiple: %b%n",
-                    body, sequenceNumber, multiple
-            );
-            ackCallback.handle(sequenceNumber, multiple);
+        System.out.println("nackCallback: multiple=" + multiple + ", sequenceNumber=" + sequenceNumber);
+        String body = outstandingConfirms.get(sequenceNumber);
+        System.err.format(
+        "Message with body %s has been nack-ed. Sequence number: %d, multiple: %b%n",
+        body, sequenceNumber, multiple
+        );
+        ackCallback.handle(sequenceNumber, multiple);
         };
 
         /* 添加一个异步确认监听器：
@@ -2284,31 +2280,31 @@ static void handlePublishConfirmsAsynchronously() throws Exception {
 
         long start = System.nanoTime();
         for (int i = 0; i < MESSAGE_COUNT; i++) {
-            String body = String.valueOf(i);
-            long nextPublishSeqNo = channel.getNextPublishSeqNo(); // 获取下一个消息的序列号
-            outstandingConfirms.put(nextPublishSeqNo, body);
-            System.out.printf("发布: nextPublishSeqNo=%d, body=%s\n", nextPublishSeqNo, body);
-            channel.basicPublish("", queue, null, body.getBytes());
+        String body = String.valueOf(i);
+        long nextPublishSeqNo = channel.getNextPublishSeqNo(); // 获取下一个消息的序列号
+        outstandingConfirms.put(nextPublishSeqNo, body);
+        System.out.printf("发布: nextPublishSeqNo=%d, body=%s\n", nextPublishSeqNo, body);
+        channel.basicPublish("", queue, null, body.getBytes());
         }
 
         // 若消息在60秒内未完全确认好，则抛出异常
         if (!waitUntil(Duration.ofSeconds(60), outstandingConfirms::isEmpty)) {
-            throw new IllegalStateException("All messages could not be confirmed in 60 seconds");
+        throw new IllegalStateException("All messages could not be confirmed in 60 seconds");
         }
 
         long end = System.nanoTime();
         System.out.format("Published %,d messages and handled confirms asynchronously in %,d ms%n", MESSAGE_COUNT, Duration.ofNanos(end - start).toMillis());
-    }
-}
+        }
+        }
 
 static boolean waitUntil(Duration timeout, BooleanSupplier condition) throws InterruptedException {
-    int waited = 0;
-    while (!condition.getAsBoolean() && waited < timeout.toMillis()) {
+        int waited = 0;
+        while (!condition.getAsBoolean() && waited < timeout.toMillis()) {
         Thread.sleep(100L);
         waited = +100;
-    }
-    return condition.getAsBoolean();
-}
+        }
+        return condition.getAsBoolean();
+        }
 ```
 
 # 参考资料
