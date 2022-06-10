@@ -1532,7 +1532,7 @@ topic 类型的交换机可以实现模糊匹配，需要注意的是，生产�
 - `*.orange.*`：共3个单词，中间为 orange，第一个和最后一个为任一单词，如 quick.orange.rabbit、lazy.orange.elephant、quick.orange.fox
 - `*.*.rabbit`：共3个单词，最后一个为 rabbit，前2个为任一单词，如 quick.orange.rabbit
 - `lazy.#`：以 azy 开头的所有消息，如：lazy.orange.elephant、lazy.brown.fox
-  ![topics的消息传递](assets/seven-messaging-mode/xxxtopics的消息传递.png)
+  ![topics的消息传递](assets/seven-messaging-mode/topics的消息传递.png)
 
 ## 5.1. Java Client 实现
 
