@@ -40,7 +40,7 @@ RabbitMQ 是一个消息中间件，它可以接收和转发消息。RabbitMQ �
 - **队列（Queue，下图红色区域）**：队列好比一个邮箱，它位于 RabbitMQ 内部，用来存储消息。队列的存储空间受限于服务器的内存和磁盘大小，它本质上是一个大的消息缓冲区。多个生产者可以发送消息到队列中，多个消费者也可以从队列中接收消息。
 - **消费者（C，Consumer）**：等待从队列接收消息。
 
-![hello-world的消息传递](/docs/assets/seven-messaging-mode/hello-world的消息传递.png)
+![hello-world的消息传递](https://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/hello-world%E7%9A%84%E6%B6%88%E6%81%AF%E4%BC%A0%E9%80%92.pnghttps://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/hello-world的消息传递.png)
 
 下代码示例为：
 仅有一个生产者将消息放入 hello-queue 队列中，有一个消费者监听 hello-queue 队列，并将接收到的消息打印出来。
@@ -204,24 +204,24 @@ public class Tut1Receiver {
 以上代码为 Spring Boot 实现方式，为了模拟生产和消费程序，以 IDEA 工具为例，新增2个 Spring Boot 启动配置，并通过设置 Program arguments 来分别启动生产者和消费者程序。通过 `--spring-profiles-active` 实现加载所配置的类，以达到区分生产者和消费者程序的目的。
 
 - 生产者的启动配置：
-  ![[hello-world-sender的IDEA启动配置.png]]
+  ![hello-world-sender的IDEA启动配置](https://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/hello-world%E7%9A%84%E6%B6%88%E6%81%AF%E4%BC%A0%E9%80%92.pnghttps://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/hello-world-sender的IDEA启动配置.png)
 
 - 消费者的启动配置：
-  ![[hello-world-receiver的IDEA启动配置.png]]
+  ![hello-world-receiver的IDEA启动配置](https://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/hello-world%E7%9A%84%E6%B6%88%E6%81%AF%E4%BC%A0%E9%80%92.pnghttps://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/hello-world-receiver的IDEA启动配置.png)
 
 输出结果：
 - 生产者的输出：
-  ![[hello-world-sender的输出结果.png]]
+  ![hello-world-sender的输出结果](https://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/hello-world%E7%9A%84%E6%B6%88%E6%81%AF%E4%BC%A0%E9%80%92.pnghttps://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/hello-world-sender的输出结果.png)
 
 - 消费者的输出：
-  ![[hello-world-receiver的输出结果.png]]
+  ![hello-world-receiver的输出结果](https://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/hello-world%E7%9A%84%E6%B6%88%E6%81%AF%E4%BC%A0%E9%80%92.pnghttps://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/hello-world-receiver的输出结果.png)
 
 # 2. Work queues 工作队列（任务分发）模式
 
 [[#^885f53|上一节]]只有一个消费者，所有的消息都只有分发到那个唯一的消费者去处理，本节将增加多个消费者，一起来承担生产者发出的消息。工作队列（Work Queues）模式，又叫任务队列，可以将消息分发给多个消费者来处理，面对大量资源任务时，可横向扩展消费者，并行执行任务。
 > 一个生产者、一个默认交换机、一个队列（work-queue）、两个消费者。
 
-![[work-queues的消息传递.png|400]]
+![work-queues的消息传递](https://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/hello-world%E7%9A%84%E6%B6%88%E6%81%AF%E4%BC%A0%E9%80%92.pnghttps://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/work-queues的消息传递.png)
 
 本节主要内容为：
 - **[[#^93402c|轮询分发]]**：多个消费者的工作队列模式，采用自动消息确认，生产者发布的所有消息会按序分发（平均分配）给每一个消费者，若面临大量消息处理的需求，可横向扩展消费者数量，提升处理效率。但是当某个消费挂掉后，当前该消费者正处理的消息和已分发未处理的消息都会被丢弃。
@@ -301,7 +301,7 @@ class WorkQueuesAutoAckRecv {
 ```
 
 > 如何在 IDEA 启动多个实例：在 Run/Debug Configurations 中 Build and run 那行点击 Modify options，并选中 ==Allow multiple instance== 即可，启动配置如下：
-> ![[WorkQueuesAutoAckRecv启动多个实例配置.png]]
+> ![WorkQueuesAutoAckRecv启动多个实例配置](https://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/hello-world%E7%9A%84%E6%B6%88%E6%81%AF%E4%BC%A0%E9%80%92.pnghttps://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/WorkQueuesAutoAckRecv启动多个实例配置.png)
 
 输出结果：
 
@@ -921,7 +921,8 @@ spring:
 
 由上面的工作队列（Work Queues）可知，每个消息都会被分发到一个消费者，本节将介绍如何将同一个消息分发给多个消费者。发布订阅（Publish/Subscribe）模式是指生产者发布消息，所有订阅的消费者都可以接收到消息。如下图，实质上，生产者（P）发布消息，消息是传递到交换机（X，Exchanges）上，交换机再将消息分发到已绑定的消费者队列中。
 
-![[publish-subscribe的消息传递.png|400]]
+> ![publish-subscribe的消息传递](https://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/hello-world%E7%9A%84%E6%B6%88%E6%81%AF%E4%BC%A0%E9%80%92.pnghttps://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/publish-subscribe的消息传递.png)
+
 
 RabbitMQ 中传递消息的核心思想是：生产者从不会将消息直接传递到队列中，实际上，生产者并不知道这些消息被传递到了哪些队列中。相反，生产者仅能将消息发送到交换机中。交换机要做的工作非常单纯，一方面接收来自生产者的消息，另一方面将消息推送到队列中。交换机必须确切直到如何处理这些消息，是将消息放到指定某个队列中、还是将消息放到多个队列中？抑或是应该丢弃掉？这些都由交换机的类型来决定。
 
@@ -1232,16 +1233,17 @@ public class Tut3Receiver {
 （1）direct 交换机
 下图可知，交换机（X）为 direct 类型，绑定了2个队列 Q1 和 Q2，其中，队列 Q1 的绑定键为 orange，队列 Q2 的绑定键为 black 和 green。在这种绑定情况下，生产者（P）发布消息到交换机（X）上，其中，绑定键为 orange 的消息会发往队列 Q1，绑定键为 black 和 green 的消息会发往队列 Q2，其他的消息则会被丢弃。
 
-![[routing-direct-exchange.png|400]]
+![routing-direct-exchange](https://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/hello-world%E7%9A%84%E6%B6%88%E6%81%AF%E4%BC%A0%E9%80%92.pnghttps://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/routing-direct-exchange.png)
+
 
 （2）多重绑定（Multiple bindings）
 若交换机（X）为 direct 类型，但是它绑定的多个队列的绑定键都相同，那么这种情况则与 fanout 效果类似。如下图，发布的消息的绑定键为 black 的消息既会发到 Q1 队列，也会发到 Q2 队列。
 
-![[routing-multiple-bindings.png|400]]
+![routing-multiple-bindings](https://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/hello-world%E7%9A%84%E6%B6%88%E6%81%AF%E4%BC%A0%E9%80%92.pnghttps://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/routing-multiple-bindings.png)
 
 下面以日志系统为例，声明一个 direct 类型交换机，将 error 消息发送一个消费者，并保存到磁盘，将 info、error、warn 的消息发送给另一个消费者，并打印出来，其他消息，如 debug 消息 会被丢弃。
 
-![[routing的消息传递.png|400]]
+![routing的消息传递](https://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/hello-world%E7%9A%84%E6%B6%88%E6%81%AF%E4%BC%A0%E9%80%92.pnghttps://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/routing的消息传递.png)
 
 ## 4.1. Java Client 实现
 
@@ -1531,7 +1533,8 @@ topic 类型的交换机可以实现模糊匹配，需要注意的是，生产�
 - `*.orange.*`：共3个单词，中间为 orange，第一个和最后一个为任一单词，如 quick.orange.rabbit、lazy.orange.elephant、quick.orange.fox
 - `*.*.rabbit`：共3个单词，最后一个为 rabbit，前2个为任一单词，如 quick.orange.rabbit
 - `lazy.#`：以 azy 开头的所有消息，如：lazy.orange.elephant、lazy.brown.fox
-  ![[topics的消息传递.png|450]]
+  ![topics的消息传递](https://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/hello-world%E7%9A%84%E6%B6%88%E6%81%AF%E4%BC%A0%E9%80%92.pnghttps://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/topics的消息传递.png)
+
 
 ## 5.1. Java Client 实现
 
@@ -1839,7 +1842,8 @@ RPC（Remote Procedure Call），即远程过程调用，它是一种通过网�
 3. 服务端从队列 rpc_queue 接收到来自客户端的计算请求，进行计算处理，并将计算结果发布到客户端传递过来的回调队列 `replyTo` 中，并携带 `correlationId`
 4. 客户端监听回调队列 `replyTo`，等到有返回结果，先检查 `correlationId` 确认与请求是否匹配，最终客户端拿到真正计算结果。
 
-![[RPC的消息传递.png|550]]
+![RPC的消息传递](https://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/hello-world%E7%9A%84%E6%B6%88%E6%81%AF%E4%BC%A0%E9%80%92.pnghttps://raw.githubusercontent.com/sissilab/RabbitMQ-Lab/master/docs/assets/seven-messaging-mode/RPC的消息传递.png)
+
 
 ## 6.1. Java Client 实现
 
