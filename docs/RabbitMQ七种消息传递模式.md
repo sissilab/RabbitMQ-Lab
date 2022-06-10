@@ -2166,7 +2166,7 @@ public class Tut6Server {
 - **单个确认发布**：同步等待确认，简单，但吞吐量有限，发布速度慢。
 ```java
 static void publishMessagesIndividually() throws Exception {
-        try (Connection connection = createConnection()) {
+    try (Connection connection = createConnection()) {
         Channel channel = connection.createChannel();
 
         String queue = UUID.randomUUID().toString();
@@ -2176,23 +2176,23 @@ static void publishMessagesIndividually() throws Exception {
         channel.confirmSelect();
         long start = System.nanoTime();
         for (int i = 0; i < MESSAGE_COUNT; i++) {
-        String body = String.valueOf(i);
-        channel.basicPublish("", queue, null, body.getBytes());
-        //channel.waitForConfirmsOrDie(5_000); // 只有在消息被确认的时候才返回，若在指定时间内未确认则抛出异常TimeoutException
-        if (channel.waitForConfirms()) { // 等到消息确认
-        System.out.println(i + ": 消息发送成功");
-        }
+            String body = String.valueOf(i);
+            channel.basicPublish("", queue, null, body.getBytes());
+            //channel.waitForConfirmsOrDie(5_000); // 只有在消息被确认的时候才返回，若在指定时间内未确认则抛出异常TimeoutException
+            if (channel.waitForConfirms()) { // 等到消息确认
+                System.out.println(i + ": 消息发送成功");
+            }
         }
         long end = System.nanoTime();
         System.out.format("Published %,d messages individually in %,d ms%n", MESSAGE_COUNT, Duration.ofNanos(end - start).toMillis());
-        }
-        }
+    }
+}
 ```
 
 - **批量确认发布**：批量同步等待确认，简单，合理的吞吐量，一旦出现问题很难推断出是哪条消息出现了问题，实际仍为同步的，一样是阻塞消息的发布。
 ```java
 static void publishMessagesInBatch() throws Exception {
-        try (Connection connection = createConnection()) {
+    try (Connection connection = createConnection()) {
         Channel channel = connection.createChannel();
 
         String queue = UUID.randomUUID().toString();
@@ -2206,32 +2206,32 @@ static void publishMessagesInBatch() throws Exception {
 
         long start = System.nanoTime();
         for (int i = 0; i < MESSAGE_COUNT; i++) {
-        String body = String.valueOf(i);
-        channel.basicPublish("", queue, null, body.getBytes());
-        outstandingMessageCount++;
+            String body = String.valueOf(i);
+            channel.basicPublish("", queue, null, body.getBytes());
+            outstandingMessageCount++;
 
-        // 批量确认，每100条确认一次
-        if (outstandingMessageCount == batchSize) {
-        channel.waitForConfirmsOrDie(5_000);
-        System.out.println("消息确认, i=" + i);
-        outstandingMessageCount = 0;
-        }
+            // 批量确认，每100条确认一次
+            if (outstandingMessageCount == batchSize) {
+                channel.waitForConfirmsOrDie(5_000);
+                System.out.println("消息确认, i=" + i);
+                outstandingMessageCount = 0;
+            }
         }
         // 确保剩余未确认的消息完成确认
         if (outstandingMessageCount > 0) {
-        channel.waitForConfirmsOrDie(5_000);
-        System.out.println("剩余所有消息确认");
+            channel.waitForConfirmsOrDie(5_000);
+            System.out.println("剩余所有消息确认");
         }
         long end = System.nanoTime();
         System.out.format("Published %,d messages in batch in %,d ms%n", MESSAGE_COUNT, Duration.ofNanos(end - start).toMillis());
-        }
-        }
+    }
+}
 ```
 
 - **异步确认发布**：最佳性能和资源使用，在出现错误的情况下可以很好地控制，但是实现起来稍微难些。
 ```java
 static void handlePublishConfirmsAsynchronously() throws Exception {
-        try (Connection connection = createConnection()) {
+    try (Connection connection = createConnection()) {
         Channel channel = connection.createChannel();
 
         String queue = UUID.randomUUID().toString();
@@ -2246,31 +2246,31 @@ static void handlePublishConfirmsAsynchronously() throws Exception {
 
         // ack 回调
         ConfirmCallback ackCallback = (sequenceNumber, multiple) -> {
-        System.out.println("ackCallback: multiple=" + multiple + ", sequenceNumber=" + sequenceNumber);
-        // multiple: true 返回的是小于等于当前序列号的未确认消息; false 确认当前序列号消息
-        if (multiple) {
-        // headMap(sequenceNumber): 合获取key小于sequenceNumber的所有map集
-        ConcurrentNavigableMap<Long, String> confirmed = outstandingConfirms.headMap(sequenceNumber, true);
-        StringBuilder keySb = new StringBuilder();
-        for (Long seqNo : confirmed.keySet()) {
-        keySb.append(seqNo).append(", ");
-        }
-        System.out.println("multiple=true: sequenceNumber=" + sequenceNumber + ">>" + keySb.toString());
-        confirmed.clear(); // 清除已确认的消息
-        } else {
-        // 清除当前sequenceNumber的已确认的消息
-        outstandingConfirms.remove(sequenceNumber);
-        }
+            System.out.println("ackCallback: multiple=" + multiple + ", sequenceNumber=" + sequenceNumber);
+            // multiple: true 返回的是小于等于当前序列号的未确认消息; false 确认当前序列号消息
+            if (multiple) {
+                // headMap(sequenceNumber): 合获取key小于sequenceNumber的所有map集
+                ConcurrentNavigableMap<Long, String> confirmed = outstandingConfirms.headMap(sequenceNumber, true);
+                StringBuilder keySb = new StringBuilder();
+                for (Long seqNo : confirmed.keySet()) {
+                    keySb.append(seqNo).append(", ");
+                }
+                System.out.println("multiple=true: sequenceNumber=" + sequenceNumber + ">>" + keySb.toString());
+                confirmed.clear(); // 清除已确认的消息
+            } else {
+                // 清除当前sequenceNumber的已确认的消息
+                outstandingConfirms.remove(sequenceNumber);
+            }
         };
         // nack 回调
         ConfirmCallback nackCallback = (sequenceNumber, multiple) -> {
-        System.out.println("nackCallback: multiple=" + multiple + ", sequenceNumber=" + sequenceNumber);
-        String body = outstandingConfirms.get(sequenceNumber);
-        System.err.format(
-        "Message with body %s has been nack-ed. Sequence number: %d, multiple: %b%n",
-        body, sequenceNumber, multiple
-        );
-        ackCallback.handle(sequenceNumber, multiple);
+            System.out.println("nackCallback: multiple=" + multiple + ", sequenceNumber=" + sequenceNumber);
+            String body = outstandingConfirms.get(sequenceNumber);
+            System.err.format(
+                    "Message with body %s has been nack-ed. Sequence number: %d, multiple: %b%n",
+                    body, sequenceNumber, multiple
+            );
+            ackCallback.handle(sequenceNumber, multiple);
         };
 
         /* 添加一个异步确认监听器：
@@ -2281,31 +2281,31 @@ static void handlePublishConfirmsAsynchronously() throws Exception {
 
         long start = System.nanoTime();
         for (int i = 0; i < MESSAGE_COUNT; i++) {
-        String body = String.valueOf(i);
-        long nextPublishSeqNo = channel.getNextPublishSeqNo(); // 获取下一个消息的序列号
-        outstandingConfirms.put(nextPublishSeqNo, body);
-        System.out.printf("发布: nextPublishSeqNo=%d, body=%s\n", nextPublishSeqNo, body);
-        channel.basicPublish("", queue, null, body.getBytes());
+            String body = String.valueOf(i);
+            long nextPublishSeqNo = channel.getNextPublishSeqNo(); // 获取下一个消息的序列号
+            outstandingConfirms.put(nextPublishSeqNo, body);
+            System.out.printf("发布: nextPublishSeqNo=%d, body=%s\n", nextPublishSeqNo, body);
+            channel.basicPublish("", queue, null, body.getBytes());
         }
 
         // 若消息在60秒内未完全确认好，则抛出异常
         if (!waitUntil(Duration.ofSeconds(60), outstandingConfirms::isEmpty)) {
-        throw new IllegalStateException("All messages could not be confirmed in 60 seconds");
+            throw new IllegalStateException("All messages could not be confirmed in 60 seconds");
         }
 
         long end = System.nanoTime();
         System.out.format("Published %,d messages and handled confirms asynchronously in %,d ms%n", MESSAGE_COUNT, Duration.ofNanos(end - start).toMillis());
-        }
-        }
+    }
+}
 
 static boolean waitUntil(Duration timeout, BooleanSupplier condition) throws InterruptedException {
-        int waited = 0;
-        while (!condition.getAsBoolean() && waited < timeout.toMillis()) {
+    int waited = 0;
+    while (!condition.getAsBoolean() && waited < timeout.toMillis()) {
         Thread.sleep(100L);
         waited = +100;
-        }
-        return condition.getAsBoolean();
-        }
+    }
+    return condition.getAsBoolean();
+}
 ```
 
 # 参考资料
