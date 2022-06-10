@@ -471,7 +471,7 @@ Process finished with exit code 130 (interrupted by signal 2: SIGINT)
 - **队列持久化**：声明队列 `Channel.queueDeclare()` 时，可设置参数 `durable` 为 true。队列持久化能保证其本身的元数据不会因服务异常情况而丢失，但不能保证内部存储的消息不会丢失。
 - **消息持久化**：发布消息 `Channel.basicPublish()` 时，可设置参数 `props` 为 `MessageProperties.PERSISTENT_TEXT_PLAIN`，标记消息持久化。
 
-> （1）为了提升服务的可靠性，的确可以将所有的消息都设置为持久化，但是这样会严重影响 RabbitMQ 的性能。因为持久化意味着数据要落盘，而写入磁盘的速度要远慢于写入内存的速度。故而，针对可靠性不高的消息可以不开启持久化，以提升整体的吞吐量，这也就意味着我们需在可靠性和吞吐量之间进行权衡。
+> （1）为了提升服务的可靠性，的确可以将所有的消息都设置为持久化，但是这样会严重影响 RabbitMQ 的性能。因为持久化意味着数据要落盘，而写入磁盘的速度要远慢于写入内存的速度。故而，针对可靠性不高的消息可以不开启持久化，以提升整体的吞吐量，这也就意味着我们需在可靠性和吞吐量之间进行权衡。   
 > （2）即使开启了持久化，也无法保证数据一定不会丢失。在消息真正存储到磁盘上时，存在一个间隔点，此时消息可能还存储在系统缓存之中，尚未真正落盘，若这期间发生异常，那么消息也有可能会丢失。针对这种情况，可以考虑引入 RabbitMQ 的镜像队列机制（即使主节点挂了，其他节点的备份数据可保证数据正常）、或发送方确认机制（保证消息已正确发送并存储）。
 
 设置队列及消息持久化的生产者端的代码示例如下：
@@ -776,7 +776,7 @@ public class Tut2Receiver {
 - none：不确认，发送后自动丢弃
 - manual：必须手动确认，`channel.basicAck()`
 
-（1）若 acknowledge-mode 设置为 auto：无需手动确认消息，Spring Boot 会自动识别并进行消息确认，若处理消息时抛出异常 `processMessage()`，这里模拟消费者1处理消息都会抛出异常，会发现在消费者2执行完已分配给自己的消息后，再执行之前消费者1执行失败的消息。
+（1）若 acknowledge-mode 设置为 auto：无需手动确认消息，Spring Boot 会自动识别并进行消息确认，若处理消息时抛出异常 `processMessage()`，这里模拟消费者1处理消息都会抛出异常，会发现在消费者2执行完已分配给自己的消息后，再执行之前消费者1执行失败的消息。   
 （2）若 acknowledge-mode 设置为 manual：则需手动发送消息确认信号 `channel.basicAck()`。
 
 示例代码如下：
@@ -1532,7 +1532,8 @@ topic 类型的交换机可以实现模糊匹配，需要注意的是，生产�
 - `*.orange.*`：共3个单词，中间为 orange，第一个和最后一个为任一单词，如 quick.orange.rabbit、lazy.orange.elephant、quick.orange.fox
 - `*.*.rabbit`：共3个单词，最后一个为 rabbit，前2个为任一单词，如 quick.orange.rabbit
 - `lazy.#`：以 azy 开头的所有消息，如：lazy.orange.elephant、lazy.brown.fox
-  ![topics的消息传递](assets/seven-messaging-mode/topics的消息传递.png)
+  
+![topics的消息传递](assets/seven-messaging-mode/topics的消息传递.png)
 
 ## 5.1. Java Client 实现
 
