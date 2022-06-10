@@ -2,13 +2,13 @@
 
 本文介绍了 RabbitMQ 七种消息传递模式，并提供了 Java Client 和 Spring Boot 的代码示例，内容及代码主要参考于官网，具体资料可参考本文末尾的参考资料的链接。
 
-1. ["Hello World" 简单模式](https://github.com/sissilab/RabbitMQ-Lab/blob/master/docs/RabbitMQ七种消息传递模式.md#1-hello-world-简单模式)：一个简单的示例程序，一个生产者发布消息，一个消费者监听队列并接收消息。（一个生产者，一个默认交换机，一个队列，一个消费者）
-2. **Work queues 工作队列（任务分发）模式**：横向扩展消费者，多个消费者会被轮询分发消息。此外，还介绍了 消息确认、消息持久化、公平分发。（一个生产者，一个默认交换机，一个队列，多个消费者）
-3. **Publish/Subscribe 发布订阅模式**：fanout 类型交换机，生产者发布消息，所有绑定的消费者均会收到消息。
-4. **Routing 路由模式**：direct 类型交换机，生产者发布消息，交换机通过指定的 `routingKey` 将消息分发给与之绑定的消费者。
-5. **Topics 主题模式**：topic 类型交换机，生产者发布消息的 `routingKey` 可为 <u>以点号分割的单词列表</u>，而消费者可通过 `* (星号，匹配一个单词)` 或 `# (井号，匹配大于等于0个单词)` 来模糊匹配 `routingKey`，从而接收到某一主题的消息。
-6. **RPC**：通过 RabbitMQ 实现 RPC。
-7.  **Publisher Confirms 发布确认模式**：通过将信道设置成 确认（confirm）模式，生产者则可以知晓消息是否已确认，并且可以通过回调方法来处理 ack  和 nack 情况的消息。
+1. **["Hello World" 简单模式](https://github.com/sissilab/RabbitMQ-Lab/blob/master/docs/RabbitMQ七种消息传递模式.md#1-hello-world-简单模式)**：一个简单的示例程序，一个生产者发布消息，一个消费者监听队列并接收消息。（一个生产者，一个默认交换机，一个队列，一个消费者）
+2. **[Work queues 工作队列（任务分发）模式](https://github.com/sissilab/RabbitMQ-Lab/blob/master/docs/RabbitMQ七种消息传递模式.md#2-work-queues-工作队列任务分发模式)**：横向扩展消费者，多个消费者会被轮询分发消息。此外，还介绍了 消息确认、消息持久化、公平分发。（一个生产者，一个默认交换机，一个队列，多个消费者）
+3. **[Publish/Subscribe 发布订阅模式](https://github.com/sissilab/RabbitMQ-Lab/blob/master/docs/RabbitMQ七种消息传递模式.md#3-publishsubscribe-发布订阅模式fanout)**：fanout 类型交换机，生产者发布消息，所有绑定的消费者均会收到消息。
+4. **[Routing 路由模式](https://github.com/sissilab/RabbitMQ-Lab/blob/master/docs/RabbitMQ七种消息传递模式.md#4-routing-路由模式direct)**：direct 类型交换机，生产者发布消息，交换机通过指定的 `routingKey` 将消息分发给与之绑定的消费者。
+5. **[Topics 主题模式](https://github.com/sissilab/RabbitMQ-Lab/blob/master/docs/RabbitMQ七种消息传递模式.md#5-topics-主题模式topic)**：topic 类型交换机，生产者发布消息的 `routingKey` 可为 <u>以点号分割的单词列表</u>，而消费者可通过 `* (星号，匹配一个单词)` 或 `# (井号，匹配大于等于0个单词)` 来模糊匹配 `routingKey`，从而接收到某一主题的消息。
+6. **[RPC](https://github.com/sissilab/RabbitMQ-Lab/blob/master/docs/RabbitMQ七种消息传递模式.md#6-rpc-远程过程调用模式)**：通过 RabbitMQ 实现 RPC。
+7. **[Publisher Confirms 发布确认模式](https://github.com/sissilab/RabbitMQ-Lab/blob/master/docs/RabbitMQ七种消息传递模式.md#7-publisher-confirms-发布确认模式)**：通过将信道设置成 确认（confirm）模式，生产者则可以知晓消息是否已确认，并且可以通过回调方法来处理 ack  和 nack 情况的消息。
 
 Java Client 的 Maven 所需依赖如下：
 ```xml
@@ -225,9 +225,9 @@ public class Tut1Receiver {
 
 本节主要内容为：
 - **[轮询分发](https://github.com/sissilab/RabbitMQ-Lab/blob/master/docs/RabbitMQ七种消息传递模式.md#21-java-client-实现)**：多个消费者的工作队列模式，采用自动消息确认，生产者发布的所有消息会按序分发（平均分配）给每一个消费者，若面临大量消息处理的需求，可横向扩展消费者数量，提升处理效率。但是当某个消费挂掉后，当前该消费者正处理的消息和已分发未处理的消息都会被丢弃。
-- **[[#^835ae3|消息确认]]**：若为自动消息确认，当消费者挂掉，消息也会丢失；当为手动消息确认，消费者完成处理消息后再发出消息确认信号，即使消费者挂了，未处理的消息还会重新被分发给活着的消费者进行处理，确保消息不丢失。
-- **[[#^e96da6|消息持久化]]**：声明队列时设置队列持久化，发布消息时设置消息持久化，可保证队列及消息在 RabbitMQ 服务异常下数据不会丢失。
-- **[[#^322b07|公平分发]]**：通过在消费者端设置 `Channel.basicQos()` 设置参数 `prefetchCount` 预取值来限定通道上的消费者所能保持的未确认消息的最大数量，这样则会打破轮询分发，处理速度快的消费者，可以承担更多的任务。
+- **[消息确认](https://github.com/sissilab/RabbitMQ-Lab/blob/master/docs/RabbitMQ七种消息传递模式.md#211-消息确认)**：若为自动消息确认，当消费者挂掉，消息也会丢失；当为手动消息确认，消费者完成处理消息后再发出消息确认信号，即使消费者挂了，未处理的消息还会重新被分发给活着的消费者进行处理，确保消息不丢失。
+- **[消息持久化](https://github.com/sissilab/RabbitMQ-Lab/blob/master/docs/RabbitMQ七种消息传递模式.md#212-消息持久化)**：声明队列时设置队列持久化，发布消息时设置消息持久化，可保证队列及消息在 RabbitMQ 服务异常下数据不会丢失。
+- **[公平分发](https://github.com/sissilab/RabbitMQ-Lab/blob/master/docs/RabbitMQ七种消息传递模式.md#213-公平分发)**：通过在消费者端设置 `Channel.basicQos()` 设置参数 `prefetchCount` 预取值来限定通道上的消费者所能保持的未确认消息的最大数量，这样则会打破轮询分发，处理速度快的消费者，可以承担更多的任务。
 
 ## 2.1. Java Client 实现
 
@@ -260,7 +260,7 @@ class WorkQueuesSend {
 }
 ```
 
-- **消费者**：采用==自动确认==（自动应答），每个消费者将固定依次被分配消息，若有2个消费者C1和C2，当发布了10个消息，C1固定被分配所有偶数的消息，C2固定被分配所有奇数的消息。若分配给C1的消息量较小，C1处理的很快，可以提前完成，此时并不会替C2分担，C2依旧按顺序慢慢执行所有消息。
+- **消费者**：采用<mark>自动确认</mark>（自动应答），每个消费者将固定依次被分配消息，若有2个消费者C1和C2，当发布了10个消息，C1固定被分配所有偶数的消息，C2固定被分配所有奇数的消息。若分配给C1的消息量较小，C1处理的很快，可以提前完成，此时并不会替C2分担，C2依旧按顺序慢慢执行所有消息。
 ```java
 class WorkQueuesAutoAckRecv {
 
@@ -300,8 +300,8 @@ class WorkQueuesAutoAckRecv {
 }
 ```
 
-> 如何在 IDEA 启动多个实例：在 Run/Debug Configurations 中 Build and run 那行点击 Modify options，并选中 ==Allow multiple instance== 即可，启动配置如下：
-> ![[WorkQueuesAutoAckRecv启动多个实例配置.png]]
+> 如何在 IDEA 启动多个实例：在 Run/Debug Configurations 中 Build and run 那行点击 Modify options，并选中 <mark>Allow multiple instance</mark> 即可，启动配置如下：
+> ![WorkQueuesAutoAckRecv启动多个实例配置](assets/seven-messaging-mode/WorkQueuesAutoAckRecv启动多个实例配置.png)
 
 输出结果：
 
@@ -351,7 +351,7 @@ class WorkQueuesAutoAckRecv {
 
 > 额外情况：当未启动任何消费者，且生产者已发布消息到队列中时，此时启动多个消费者来接收队列中的消息，当下只会让第一个连接上的消费者来处理队列中的所有消息，其他后续连接上的消费者不会参与处理消息，当生产者继续发布消息后，后续连接上的所有消费者以及第一个消费者才会被依次分配消息。
 
-### 2.1.1. 消息确认 ^835ae3
+### 2.1.1. 消息确认
 
 消费者需要一段时间去处理消息，若当一个消费者在执行部分消息后突然挂了，当前正在处理的消息和后续分发给该消费者的消息都会被丢弃。当消费者采用自动确认时，RabbitMQ 一旦将消息分发给了消费者，便会立即将该消息标记为删除（实际上之后再删除），当消费者挂了，即使消息未处理完，也不会重新分发给其他活着的消费者，而是直接丢失。
 
@@ -464,7 +464,7 @@ Process finished with exit code 130 (interrupted by signal 2: SIGINT)
 [√]  Done! DeliveryTag=7
 ```
 
-### 2.1.2. 消息持久化 ^e96da6
+### 2.1.2. 消息持久化
 
 上面提及当设置手动消息确认，即使消费者挂了，未处理的消息仍会重新分发给其他活着的消费者，不会致使消息丢失。但是，当 RabbitMQ 服务异常情况（重启、关闭、宕机等），仍会导致声明的队列以及消息丢失。由此，可实现队列以及消息的持久化，提高 RabbitMQ 的可靠性。
 
@@ -505,11 +505,11 @@ public class WorkQueuesDurability {
 }
 ```
 
-### 2.1.3. 公平分发 ^322b07
+### 2.1.3. 公平分发
 
 鉴于前面的工作队列采用轮询分发可知，每个消费者都会固定被分发好消息，即使某个消费者处理速度较快，也不会为其他消费者分担。若遇到某些消费者任务十分繁重，来不及处理好消息，则会造成吞吐量下降，而空闲的消费者则会造成资源浪费。由此，可通过设置 `Channel.basicQos()` 来限制通道上消费者所能保持的最大未确认消息的数量。
 
-实际上，可理解为存在一个==未确认的消息缓冲区==，通过限制此缓冲区的大小，以避免无限制地将未确认的消息分发到该缓冲区。`Channel.basicQos()` 的参数 预取值 `prefetchCount` 可用来指定该缓冲区的大小，一旦达到这个上限，RabbitMQ 将停止在该通道上传递更多的消息，直至有一个消息被确认。举例来说，若 `Channel.basicQos(3)` 设置为3，当某个消费者订阅某个队列进行消费，RabbitMQ 会保存一个消费者列表，每分发一个消息都会为对应的消费者计数，若达到所设置的上限（若已分发3条消息），后续 RabbitMQ 将不会再向这个消费者分发任何消息，直至该消费者确认一条消息后，此时计数减1，那么才会继续分发给这个消费者。
+实际上，可理解为存在一个<mark>未确认的消息缓冲区</mark>，通过限制此缓冲区的大小，以避免无限制地将未确认的消息分发到该缓冲区。`Channel.basicQos()` 的参数 预取值 `prefetchCount` 可用来指定该缓冲区的大小，一旦达到这个上限，RabbitMQ 将停止在该通道上传递更多的消息，直至有一个消息被确认。举例来说，若 `Channel.basicQos(3)` 设置为3，当某个消费者订阅某个队列进行消费，RabbitMQ 会保存一个消费者列表，每分发一个消息都会为对应的消费者计数，若达到所设置的上限（若已分发3条消息），后续 RabbitMQ 将不会再向这个消费者分发任何消息，直至该消费者确认一条消息后，此时计数减1，那么才会继续分发给这个消费者。
 
 - 生产者：模拟发布10次消息。
 ```java
@@ -921,7 +921,8 @@ spring:
 
 由上面的工作队列（Work Queues）可知，每个消息都会被分发到一个消费者，本节将介绍如何将同一个消息分发给多个消费者。发布订阅（Publish/Subscribe）模式是指生产者发布消息，所有订阅的消费者都可以接收到消息。如下图，实质上，生产者（P）发布消息，消息是传递到交换机（X，Exchanges）上，交换机再将消息分发到已绑定的消费者队列中。
 
-![[publish-subscribe的消息传递.png|400]]
+![publish-subscribe的消息传递](assets/seven-messaging-mode/publish-subscribe的消息传递.png)
+
 
 RabbitMQ 中传递消息的核心思想是：生产者从不会将消息直接传递到队列中，实际上，生产者并不知道这些消息被传递到了哪些队列中。相反，生产者仅能将消息发送到交换机中。交换机要做的工作非常单纯，一方面接收来自生产者的消息，另一方面将消息推送到队列中。交换机必须确切直到如何处理这些消息，是将消息放到指定某个队列中、还是将消息放到多个队列中？抑或是应该丢弃掉？这些都由交换机的类型来决定。
 
@@ -1232,16 +1233,16 @@ public class Tut3Receiver {
 （1）direct 交换机
 下图可知，交换机（X）为 direct 类型，绑定了2个队列 Q1 和 Q2，其中，队列 Q1 的绑定键为 orange，队列 Q2 的绑定键为 black 和 green。在这种绑定情况下，生产者（P）发布消息到交换机（X）上，其中，绑定键为 orange 的消息会发往队列 Q1，绑定键为 black 和 green 的消息会发往队列 Q2，其他的消息则会被丢弃。
 
-![[routing-direct-exchange.png|400]]
+![routing-direct-exchange](assets/seven-messaging-mode/routing-direct-exchange.png)
 
 （2）多重绑定（Multiple bindings）
 若交换机（X）为 direct 类型，但是它绑定的多个队列的绑定键都相同，那么这种情况则与 fanout 效果类似。如下图，发布的消息的绑定键为 black 的消息既会发到 Q1 队列，也会发到 Q2 队列。
 
-![[routing-multiple-bindings.png|400]]
+![routing-multiple-bindings](assets/seven-messaging-mode/routing-multiple-bindings.png)
 
 下面以日志系统为例，声明一个 direct 类型交换机，将 error 消息发送一个消费者，并保存到磁盘，将 info、error、warn 的消息发送给另一个消费者，并打印出来，其他消息，如 debug 消息 会被丢弃。
 
-![[routing的消息传递.png|400]]
+![routing的消息传递](assets/seven-messaging-mode/xxxrouting的消息传递.png)
 
 ## 4.1. Java Client 实现
 
@@ -1531,7 +1532,7 @@ topic 类型的交换机可以实现模糊匹配，需要注意的是，生产�
 - `*.orange.*`：共3个单词，中间为 orange，第一个和最后一个为任一单词，如 quick.orange.rabbit、lazy.orange.elephant、quick.orange.fox
 - `*.*.rabbit`：共3个单词，最后一个为 rabbit，前2个为任一单词，如 quick.orange.rabbit
 - `lazy.#`：以 azy 开头的所有消息，如：lazy.orange.elephant、lazy.brown.fox
-  ![[topics的消息传递.png|450]]
+  ![topics的消息传递](assets/seven-messaging-mode/xxxtopics的消息传递.png)
 
 ## 5.1. Java Client 实现
 
@@ -1839,7 +1840,7 @@ RPC（Remote Procedure Call），即远程过程调用，它是一种通过网�
 3. 服务端从队列 rpc_queue 接收到来自客户端的计算请求，进行计算处理，并将计算结果发布到客户端传递过来的回调队列 `replyTo` 中，并携带 `correlationId`
 4. 客户端监听回调队列 `replyTo`，等到有返回结果，先检查 `correlationId` 确认与请求是否匹配，最终客户端拿到真正计算结果。
 
-![[RPC的消息传递.png|550]]
+![RPC的消息传递](assets/seven-messaging-mode/xxxRPC的消息传递.png)
 
 ## 6.1. Java Client 实现
 
